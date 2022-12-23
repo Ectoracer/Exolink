@@ -1,0 +1,189 @@
+<!doctype HTML>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Exolink</title>
+        <meta property="og:title" content="Exolink">
+        <meta property="og:description" content="Exolink lets you make Exoracer share links with custom titles and descriptions; soon, custom images.">
+        <link rel="icon" href="/favicon.ico">
+        <style>
+            :root { color-scheme: light dark; }
+            * { font-family: Helvetica; }
+        </style>
+    </head>
+    <body>
+        <h1>Exolink <span style="font-size:45%"><a href="https://github.com/jbmagination/exolink">source code</a></span></h1>
+        <noscript>JavaScript is (unfortunately) required</noscript>
+        <div>
+            <label for="shareLink">exoracer.page.link/</label>
+            <input type="text" id="shareLink" title="Share link" placeholder="Share link">
+            <button onclick="javascript:getData()">Get data</button>
+        </div>
+        <br>
+        <div>
+            <div>
+                <label for="levelID">Level ID:</label>
+                <input type="text" id="levelID" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
+            </div>
+            <div>
+                <label for="title">Title:</label>
+                <input type="text" id="title" placeholder="Title">
+            </div>
+            <div>
+                <label for="description">Description:</label>
+                <input type="text" id="description" placeholder="Description">
+            </div>
+            <div>
+                <label for="levelVersion">Level version:</label>
+                <input type="number" id="levelVersion" placeholder="Level version">
+            </div>
+            <button onclick="javascript:makeLink()">Make link</button>
+        </div>
+        <br>
+        <div id="link"></div>
+        <script>
+            function getData() {
+                document.getElementById('shareLink').setAttribute("readonly", "readonly")
+                document.getElementById('levelID').setAttribute("readonly", "readonly")
+                document.getElementById('title').setAttribute("readonly", "readonly")
+                document.getElementById('description').setAttribute("readonly", "readonly")
+                document.getElementById('levelVersion').setAttribute("readonly", "readonly")
+
+                // client-side validation and correction
+                var link = document.getElementById('shareLink').value
+                if(link.startsWith('http://')) { link = link.substring(7) }
+                else if (link.startsWith('https://')) { link = link.substring(8) }
+                if (link.startsWith('preview.page.link/')) link = link.substring(18)
+                if (link.startsWith('exoracer.page.link/')) link = link.substring(19)
+
+                document.getElementById('shareLink').value = link
+
+                switch (link.length) {
+                    case 4:
+                        break;
+                    case 17:
+                        break;
+                    default:
+                        if (!(link[0] == '?')) {
+                            alert('Something went wrong: Validation error: Short links must be either 4 or 17 characters')
+                            return
+                        }
+                        break;
+                }
+
+                // actually make requests
+                fetch('/getData', {
+                    method: 'POST', 
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ "link": link })
+                })
+                .then((response) => response.json())
+                .then((data) => {
+                    switch (data.status) {
+                        case "SUCCESS":
+                            document.getElementById('levelID').value = data.levelID
+                            document.getElementById('title').value = data.title
+                            document.getElementById('description').value = data.description
+                            document.getElementById('levelVersion').value = data.levelVersion
+                            document.getElementById('shareLink').removeAttribute("readonly")
+                            document.getElementById('levelID').removeAttribute("readonly")
+                            document.getElementById('title').removeAttribute("readonly")
+                            document.getElementById('description').removeAttribute("readonly")
+                            document.getElementById('levelVersion').removeAttribute("readonly")
+                            break;
+                        case "ERROR":
+                            alert("Something went wrong: " + data.error)
+                            console.error("Something went wrong: " + data.error)
+                            document.getElementById('shareLink').removeAttribute("readonly")
+                            document.getElementById('levelID').removeAttribute("readonly")
+                            document.getElementById('title').removeAttribute("readonly")
+                            document.getElementById('description').removeAttribute("readonly")
+                            document.getElementById('levelVersion').removeAttribute("readonly")
+                            break;
+                        default:
+                            alert('Something went horribly wrong')
+                            console.error('Something went horribly wrong')
+                            document.getElementById('shareLink').removeAttribute("readonly")
+                            document.getElementById('levelID').removeAttribute("readonly")
+                            document.getElementById('title').removeAttribute("readonly")
+                            document.getElementById('description').removeAttribute("readonly")
+                            document.getElementById('levelVersion').removeAttribute("readonly")
+                            break;
+                    }
+                })
+                .catch((error) => {
+                    alert("Something went wrong: " + error)
+                    console.error("Something went wrong: " + error)
+                    document.getElementById('shareLink').removeAttribute("readonly")
+                    document.getElementById('levelID').removeAttribute("readonly")
+                    document.getElementById('title').removeAttribute("readonly")
+                    document.getElementById('description').removeAttribute("readonly")
+                    document.getElementById('levelVersion').removeAttribute("readonly")
+                })
+            }
+
+            function makeLink() {
+                document.getElementById('shareLink').setAttribute("readonly", "readonly")
+                document.getElementById('levelID').setAttribute("readonly", "readonly")
+                document.getElementById('title').setAttribute("readonly", "readonly")
+                document.getElementById('description').setAttribute("readonly", "readonly")
+                document.getElementById('levelVersion').setAttribute("readonly", "readonly")
+                
+                // client-side validation
+                let levelIDregex = /^[a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9]-[a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9]-[a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9]-[a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9]-[a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9]$/
+                if (!(levelIDregex.test(document.getElementById('levelID').value))) {
+                    alert('Something went wrong: Validation error: Invalid level ID')
+                    return
+                }
+
+                // actually make requests
+                fetch('/makeLink', { 
+                    method: 'POST', 
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        "title": document.getElementById('title').value,
+                        "description": document.getElementById('description').value,
+                        "levelID": document.getElementById('levelID').value,
+                        "levelVersion": document.getElementById('levelVersion').value
+                    })
+                })
+                .then((response) => response.json())
+                .then((data) => {
+                    switch (data.status) {
+                        case "SUCCESS":
+                            document.getElementById('link').innerHTML = `<p>${data.link}</p>`
+                            document.getElementById('shareLink').removeAttribute("readonly")
+                            document.getElementById('levelID').removeAttribute("readonly")
+                            document.getElementById('title').removeAttribute("readonly")
+                            document.getElementById('description').removeAttribute("readonly")
+                            document.getElementById('levelVersion').removeAttribute("readonly")
+                            break;
+                        case "ERROR":
+                            alert("Something went wrong: " + data.error)
+                            console.error("Something went wrong: " + data.error)
+                            document.getElementById('shareLink').removeAttribute("readonly")
+                            document.getElementById('levelID').removeAttribute("readonly")
+                            document.getElementById('title').removeAttribute("readonly")
+                            document.getElementById('description').removeAttribute("readonly")
+                            document.getElementById('levelVersion').removeAttribute("readonly")
+                            break;
+                        default:
+                            alert('Something went horribly wrong')
+                            console.error('Something went horribly wrong')
+                            document.getElementById('shareLink').removeAttribute("readonly")
+                            document.getElementById('levelID').removeAttribute("readonly")
+                            document.getElementById('title').removeAttribute("readonly")
+                            document.getElementById('description').removeAttribute("readonly")
+                            document.getElementById('levelVersion').removeAttribute("readonly")
+                            break;
+                    }
+                })
+                .catch((error) => {
+                    alert("Something went wrong: " + error)
+                    console.error("Something went wrong: " + error)
+                })
+            }
+        </script>
+    </body>
+</html>
