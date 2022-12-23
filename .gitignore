@@ -1,5 +1,6 @@
 node_modules/*
 .env
+!node_modules/README.md 
 
 !node_modules/bootstrap/
 node_modules/bootstrap/dist/*
