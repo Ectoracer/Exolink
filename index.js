@@ -60,7 +60,11 @@ app.post('/getData', (req, res) => {
             });
             
             const link = await page.evaluate(() => {
-                return document.getElementsByClassName('cacJ4e')[0].getElementsByTagName('a')[0].href.baseVal;
+                if (document.getElementsByClassName('cacJ4e')[0] && document.getElementsByClassName('cacJ4e')[0].getElementsByTagName('a')[0]) {
+                    return document.getElementsByClassName('cacJ4e')[0].getElementsByTagName('a')[0].href.baseVal;
+                } else {
+                    return undefined;
+                }
             });
             if (link) { 
                 console.log('Long dynamic link found'); 
