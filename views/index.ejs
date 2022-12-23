@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Exolink</title>
         <meta property="og:title" content="Exolink">
-        <meta property="og:description" content="Exolink lets you make Exoracer share links with custom titles and descriptions; soon, custom images.">
+        <meta property="og:description" content="Exolink lets you make Exoracer share links with custom titles, descriptions, and images.">
         <link rel="icon" href="/favicon.ico">
         <style>
             :root { color-scheme: light dark; }
@@ -35,38 +35,81 @@
                 <input type="text" id="description" placeholder="Description">
             </div>
             <div>
+                <label for="imageURL">Image URL:</label>
+                <input type="text" id="imageURL" placeholder="Image URL">
+                <button onclick="javascript:makeImageURL()">Adjust image URL</button>
+            </div>
+            <div>
                 <label for="levelVersion">Level version:</label>
                 <input type="number" id="levelVersion" placeholder="Level version">
+            </div>
+            <div>
+                <label for="suffixOption">Suffix type:</label>
+                <input type="text" id="suffixOption" list="suffixList">
+                <datalist id="suffixList">
+                    <option value="Unguessable">
+                    <option value="Short">
+                </datalist>
             </div>
             <button onclick="javascript:makeLink()">Make link</button>
         </div>
         <br>
         <div id="link"></div>
         <script>
+            function makeImageURL() {
+                var confirmed = confirm("This will replace the existing image URL to make it match with the current level ID and level version. You do not need to use this button to use a custom image URL.")
+                if (confirmed) {
+                    document.getElementById('levelID').setAttribute("readonly", "readonly")
+                    document.getElementById('levelVersion').setAttribute("readonly", "readonly")
+                    document.getElementById('imageURL').setAttribute("readonly", "readonly")
+                    
+                    var levelID = document.getElementById('levelID').value;
+                    var levelVersion = document.getElementById('levelVersion').value;
+                    document.getElementById('imageURL').value = `https://storage.googleapis.com/exoracer-bd008.appspot.com/levels/${levelID}-${levelVersion}.png`
+                    
+                    document.getElementById('levelID').removeAttribute("readonly")
+                    document.getElementById('levelVersion').removeAttribute("readonly")
+                    document.getElementById('imageURL').removeAttribute("readonly")
+                            
+                }
+            }
+
             function getData() {
                 document.getElementById('shareLink').setAttribute("readonly", "readonly")
                 document.getElementById('levelID').setAttribute("readonly", "readonly")
                 document.getElementById('title').setAttribute("readonly", "readonly")
                 document.getElementById('description').setAttribute("readonly", "readonly")
+                document.getElementById('imageURL').setAttribute("readonly", "readonly")
                 document.getElementById('levelVersion').setAttribute("readonly", "readonly")
+                document.getElementById('suffixOption').setAttribute("readonly", "readonly")
 
                 // client-side validation and correction
                 var link = document.getElementById('shareLink').value
+                link = link.trim()
                 if(link.startsWith('http://')) { link = link.substring(7) }
                 else if (link.startsWith('https://')) { link = link.substring(8) }
                 if (link.startsWith('preview.page.link/')) link = link.substring(18)
                 if (link.startsWith('exoracer.page.link/')) link = link.substring(19)
 
                 document.getElementById('shareLink').value = link
+                let suffixOption = "Unguessable";
 
                 switch (link.length) {
                     case 4:
+                        suffixOption = "Short";
                         break;
                     case 17:
                         break;
                     default:
                         if (!(link[0] == '?')) {
                             alert('Something went wrong: Validation error: Short links must be either 4 or 17 characters')
+                            document.getElementById('shareLink').removeAttribute("readonly")
+                            document.getElementById('levelID').removeAttribute("readonly")
+                            document.getElementById('title').removeAttribute("readonly")
+                            document.getElementById('description').removeAttribute("readonly")
+                            document.getElementById('imageURL').removeAttribute("readonly")
+                            document.getElementById('levelVersion').removeAttribute("readonly")
+                            document.getElementById('suffixOption').removeAttribute("readonly")
                             return
                         }
                         break;
@@ -85,12 +128,16 @@
                             document.getElementById('levelID').value = data.levelID
                             document.getElementById('title').value = data.title
                             document.getElementById('description').value = data.description
+                            document.getElementById('imageURL').value = data.imageURL
                             document.getElementById('levelVersion').value = data.levelVersion
+                            document.getElementById('suffixOption').value = suffixOption
                             document.getElementById('shareLink').removeAttribute("readonly")
                             document.getElementById('levelID').removeAttribute("readonly")
                             document.getElementById('title').removeAttribute("readonly")
                             document.getElementById('description').removeAttribute("readonly")
+                            document.getElementById('imageURL').removeAttribute("readonly")
                             document.getElementById('levelVersion').removeAttribute("readonly")
+                            document.getElementById('suffixOption').removeAttribute("readonly")
                             break;
                         case "ERROR":
                             alert("Something went wrong: " + data.error)
@@ -99,7 +146,9 @@
                             document.getElementById('levelID').removeAttribute("readonly")
                             document.getElementById('title').removeAttribute("readonly")
                             document.getElementById('description').removeAttribute("readonly")
+                            document.getElementById('imageURL').removeAttribute("readonly")
                             document.getElementById('levelVersion').removeAttribute("readonly")
+                            document.getElementById('suffixOption').removeAttribute("readonly")
                             break;
                         default:
                             alert('Something went horribly wrong')
@@ -108,7 +157,9 @@
                             document.getElementById('levelID').removeAttribute("readonly")
                             document.getElementById('title').removeAttribute("readonly")
                             document.getElementById('description').removeAttribute("readonly")
+                            document.getElementById('imageURL').removeAttribute("readonly")
                             document.getElementById('levelVersion').removeAttribute("readonly")
+                            document.getElementById('suffixOption').removeAttribute("readonly")
                             break;
                     }
                 })
@@ -119,7 +170,9 @@
                     document.getElementById('levelID').removeAttribute("readonly")
                     document.getElementById('title').removeAttribute("readonly")
                     document.getElementById('description').removeAttribute("readonly")
+                    document.getElementById('imageURL').removeAttribute("readonly")
                     document.getElementById('levelVersion').removeAttribute("readonly")
+                    document.getElementById('suffixOption').removeAttribute("readonly")
                 })
             }
 
@@ -128,12 +181,21 @@
                 document.getElementById('levelID').setAttribute("readonly", "readonly")
                 document.getElementById('title').setAttribute("readonly", "readonly")
                 document.getElementById('description').setAttribute("readonly", "readonly")
+                document.getElementById('imageURL').setAttribute("readonly", "readonly")
                 document.getElementById('levelVersion').setAttribute("readonly", "readonly")
+                document.getElementById('suffixOption').removeAttribute("readonly")
                 
                 // client-side validation
                 let levelIDregex = /^[a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9]-[a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9]-[a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9]-[a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9]-[a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9]$/
                 if (!(levelIDregex.test(document.getElementById('levelID').value))) {
                     alert('Something went wrong: Validation error: Invalid level ID')
+                    document.getElementById('shareLink').removeAttribute("readonly")
+                    document.getElementById('levelID').removeAttribute("readonly")
+                    document.getElementById('title').removeAttribute("readonly")
+                    document.getElementById('description').removeAttribute("readonly")
+                    document.getElementById('imageURL').removeAttribute("readonly")
+                    document.getElementById('levelVersion').removeAttribute("readonly")
+                    document.getElementById('suffixOption').removeAttribute("readonly")
                     return
                 }
 
@@ -142,22 +204,26 @@
                     method: 'POST', 
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
+                        "levelID": document.getElementById('levelID').value,
                         "title": document.getElementById('title').value,
                         "description": document.getElementById('description').value,
-                        "levelID": document.getElementById('levelID').value,
-                        "levelVersion": document.getElementById('levelVersion').value
+                        "imageURL": document.getElementById('imageURL').value,
+                        "levelVersion": document.getElementById('levelVersion').value,
+                        "suffix": document.getElementById('suffixOption').value.toUpperCase()
                     })
                 })
                 .then((response) => response.json())
                 .then((data) => {
                     switch (data.status) {
                         case "SUCCESS":
-                            document.getElementById('link').innerHTML = `<p>${data.link}</p>`
+                            document.getElementById('link').innerHTML = `<p><a href="${data.link}">${data.link}</a></p>`
                             document.getElementById('shareLink').removeAttribute("readonly")
                             document.getElementById('levelID').removeAttribute("readonly")
                             document.getElementById('title').removeAttribute("readonly")
                             document.getElementById('description').removeAttribute("readonly")
+                            document.getElementById('imageURL').removeAttribute("readonly")
                             document.getElementById('levelVersion').removeAttribute("readonly")
+                            document.getElementById('suffixOption').removeAttribute("readonly")
                             break;
                         case "ERROR":
                             alert("Something went wrong: " + data.error)
@@ -166,7 +232,9 @@
                             document.getElementById('levelID').removeAttribute("readonly")
                             document.getElementById('title').removeAttribute("readonly")
                             document.getElementById('description').removeAttribute("readonly")
+                            document.getElementById('imageURL').removeAttribute("readonly")
                             document.getElementById('levelVersion').removeAttribute("readonly")
+                            document.getElementById('suffixOption').removeAttribute("readonly")
                             break;
                         default:
                             alert('Something went horribly wrong')
@@ -175,13 +243,22 @@
                             document.getElementById('levelID').removeAttribute("readonly")
                             document.getElementById('title').removeAttribute("readonly")
                             document.getElementById('description').removeAttribute("readonly")
+                            document.getElementById('imageURL').removeAttribute("readonly")
                             document.getElementById('levelVersion').removeAttribute("readonly")
+                            document.getElementById('suffixOption').removeAttribute("readonly")
                             break;
                     }
                 })
                 .catch((error) => {
                     alert("Something went wrong: " + error)
                     console.error("Something went wrong: " + error)
+                    document.getElementById('shareLink').removeAttribute("readonly")
+                    document.getElementById('levelID').removeAttribute("readonly")
+                    document.getElementById('title').removeAttribute("readonly")
+                    document.getElementById('description').removeAttribute("readonly")
+                    document.getElementById('imageURL').removeAttribute("readonly")
+                    document.getElementById('levelVersion').removeAttribute("readonly")
+                    document.getElementById('suffixOption').removeAttribute("readonly")
                 })
             }
         </script>
