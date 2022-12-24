@@ -119,9 +119,10 @@
                     <option value="Short">
                 </datalist>
             </div>
+            <br>
             <input type="submit" value="Make link">
         </form>
-        <br>
-        <div id="link"><% if(data && data.link) { %> <a href="<%=data.link%>"><%=data.link%></a> <% } %></div>
+        <% if(data && data.link) { %> <br>
+        <div id="link"> <a href="<%=data.link%>"><%=data.link%></a></div><% } %>
     </body>
 </html>
