@@ -85,6 +85,8 @@ app.post('/getData', (req, res) => {
             let description = decodeURIComponent(link).substring(decodeURIComponent(link).indexOf('&description=')).substring(13).split('&')[0].replaceAll('+', ' ')
             let imageURL = decodeURIComponent(decodeURIComponent(link).substring(decodeURIComponent(link).indexOf('&imageUrl=')).substring(10).split('&')[0])
             let levelVersion = decodeURIComponent(link).substring(decodeURIComponent(link).indexOf('&levelVersion=')).substring(14).split('&')[0]
+            
+            if (parseInt(levelVersion).toString() == "NaN") levelVersion = 1
 
             res.json({
                 "status": "SUCCESS",
@@ -116,6 +118,8 @@ app.post('/makeLink', (req, res) => {
             let imageURL = req.body.imageURL;
             let levelVersion = parseInt(req.body.levelVersion);
             let suffixOption;
+
+            if (levelVersion.toString() == "NaN") levelVersion = 1
 
             if (req.body.suffix == "SHORT") suffixOption = "SHORT"
             else suffixOption = "UNGUESSABLE"

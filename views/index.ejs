@@ -199,6 +199,9 @@
                     return
                 }
 
+                if (parseInt(document.getElementById('levelVersion').value).toString() == "NaN") document.getElementById('levelVersion').value = 1
+                if (document.getElementById('suffixOption').value == "") document.getElementById('suffixOption').value = "Unguessable"
+
                 // actually make requests
                 fetch('/makeLink', { 
                     method: 'POST', 
