@@ -17,4 +17,4 @@ Once you have the key, make a `.env` file:
 LINK_KEY=[XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]
 ```
 
-Then, install the necessary dependencies with `npm ci` or `npm install` - you can run Exolink from there with `node index`. You'll be able to access Exolink on port `2000`.
+Then, install the necessary dependencies with `npm ci` or `npm install` - you can run Exolink from there with `node index`. You'll be able to access Exolink on port `8080`.
