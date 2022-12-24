@@ -1,0 +1,120 @@
+<!doctype HTML>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <script>window.location.href = "/"</script>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Exolink</title>
+        <meta property="og:title" content="Exolink">
+        <meta property="og:description" content="Exolink lets you make Exoracer share links with custom titles, descriptions, and images.">
+        <link rel="icon" href="/favicon.ico">
+        <style>
+            :root { color-scheme: light dark; }
+            * { font-family: Helvetica; }
+            a {
+                color: rgb(0, 64, 255);
+                text-decoration: none;
+                position: relative;
+                transition: color 0.25s;
+            }
+            a:after {
+                content: '';
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: 0%;
+                border-bottom: 2px solid rgb(0, 128, 255);
+                transition: 0.4s;
+            }
+            a:hover:after {
+                width: 100%;
+                color: rgb(0, 128, 255);
+            }
+            a:hover { color: rgb(0, 128, 255); }
+            @media (prefers-color-scheme: dark) {
+                a {
+                    color: rgb(0, 128, 255);
+                    text-decoration: none;
+                    position: relative;
+                    transition: color 0.25s;
+                }
+                a:after {
+                    content: '';
+                    position: absolute;
+                    bottom: 0;
+                    left: 0;
+                    width: 0%;
+                    border-bottom: 2px solid rgb(78, 166, 255);
+                    transition: 0.4s;
+                }
+                a:hover:after {
+                    width: 100%;
+                    color: rgb(78, 166, 255);
+                }
+                a:hover { color: rgb(78, 166, 255); }
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Exolink <span style="font-size:45%"><a href="https://github.com/jbmagination/exolink">source code</a></span></h1>
+        <div id="error" style="color:darkred"><% if (data && data.error) { %> <%= "Something went wrong: " + data.error %> <% } %></div>
+        <% 
+            let suffixOption;
+
+            if (link && (!(link == null))) {
+                link = link.trim()
+                if(link.startsWith('http://')) { link = link.substring(7) }
+                else if (link.startsWith('https://')) { link = link.substring(8) }
+                if (link.startsWith('preview.page.link/')) link = link.substring(18)
+                if (link.startsWith('exoracer.page.link/')) link = link.substring(19)
+
+                if (data && data.suffixOption) {
+                    if (data.suffixOption == "SHORT") suffixOption = "Short";
+                    else suffixOption = "Unguessable";
+                }
+            }
+        %> 
+        <% if (data && data.error) { %> <br> <% } %>
+        <div>
+            <form>
+                <label for="shareLink">exoracer.page.link/</label>
+                <input type="text" id="shareLink" name="link" title="Share link" placeholder="Share link" <% if(link && (!(link == null))) { %> value="<%=link%>"<% } %>>
+                <input type="submit" value="Get data">
+            </form>
+        </div>
+        <br>
+        <form>
+            <div>
+                <label for="levelID">Level ID:</label>
+                <input type="text" id="levelID" name="levelID" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" <% if(data && data.levelID) { %> value="<%=data.levelID%>" <% } %>>
+            </div>
+            <div>
+                <label for="title">Title:</label>
+                <input type="text" id="title" name="title" placeholder="Title" <% if(data && data.title) { %> value="<%=data.title%>" <% } %>>
+            </div>
+            <div>
+                <label for="description">Description:</label>
+                <input type="text" id="description" name="description" placeholder="Description" <% if(data && data.description) { %> value="<%=data.description%>" <% } %>>
+            </div>
+            <div>
+                <label for="imageURL">Image URL:</label>
+                <input type="text" id="imageURL" name="imageURL" placeholder="Image URL" <% if(data && data.imageURL) { %> value="<%=data.imageURL%>" <% } %>>
+            </div>
+            <div>
+                <label for="levelVersion">Level version:</label>
+                <input type="number" id="levelVersion" name="levelVersion" placeholder="Level version" <% if(data && data.levelVersion) { %> value="<%=data.levelVersion%>" <% } %>>
+            </div>
+            <div>
+                <label for="suffixOption">Suffix type:</label>
+                <input type="text" id="suffixOption" name="suffix" list="suffixList" <% if(suffixOption) { %> value="<%=suffixOption%>" <% } %>>
+                <datalist id="suffixList">
+                    <option value="Unguessable">
+                    <option value="Short">
+                </datalist>
+            </div>
+            <input type="submit" value="Make link">
+        </form>
+        <br>
+        <div id="link"><% if(data && data.link) { %> <a href="<%=data.link%>"><%=data.link%></a> <% } %></div>
+    </body>
+</html>

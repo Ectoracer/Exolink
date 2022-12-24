@@ -3,24 +3,31 @@ const app = express();
 const axios = require('axios').default;
 const puppeteer = require('puppeteer');
 const ejs = require('ejs');
+const { response } = require('express');
 require('dotenv').config();
 
 app.use(express.static('public'));
 app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 app.set('view engine', 'ejs');
 
-app.get('/', (req,res) => {
-    console.log('Homepage request received')
-    res.render('index')
-})
+let host = "localhost:8080"
 
 app.post('/getData', (req, res) => {
-    console.log('/getData request received');
+    console.log('POST /getData | Request received');
     (async () => {
         try {
             // server-side validation and correction
+            console.log(req.body)
             var shortLink = req.body.link
 
+            if (!(req.body.link)) {
+                res.status(400).json({
+                    "status": "ERROR",
+                    "error": "No link sent"
+                })
+                return
+            }
             if(shortLink.startsWith('http://')) { shortLink = shortLink.substring(7) }
             else if (shortLink.startsWith('https://')) { shortLink = shortLink.substring(8) }
             if (shortLink.startsWith('preview.page.link/')) shortLink = shortLink.substring(18)
@@ -41,7 +48,7 @@ app.post('/getData', (req, res) => {
                         suffixOption = "UNGUESSABLE";
                         break;
                     default:
-                        res.json({
+                        res.status(400).json({
                             "status": "ERROR",
                             "error": "Validation error: Short links must be either 4 or 17 characters"
                         });
@@ -51,7 +58,7 @@ app.post('/getData', (req, res) => {
             }
 
             // actually doing the thing
-            console.log(`Loading preview link for exoracer.page.link/${shortLink}`)
+            console.log(`POST /getData | Loading preview link for exoracer.page.link/${shortLink}`)
             const browser = await puppeteer.launch();
             const page = await browser.newPage();
             
@@ -67,10 +74,10 @@ app.post('/getData', (req, res) => {
                 }
             });
             if (link) { 
-                console.log('Long dynamic link found'); 
+                console.log('POST /getData | Long dynamic link found'); 
             } else {
-                console.log('Long dynamic link not found');
-                res.json({
+                console.log('POST /getData | Long dynamic link not found');
+                res.status(400).json({
                     "status": "ERROR",
                     "error": "Long dynamic link couldn't be found - does your short link exist?"
                 });
@@ -90,6 +97,8 @@ app.post('/getData', (req, res) => {
 
             res.json({
                 "status": "SUCCESS",
+                "inputChars": shortLink,
+                "dynamicLink": link,
                 "title": title,
                 "description": description,
                 "levelID": levelID,
@@ -99,7 +108,7 @@ app.post('/getData', (req, res) => {
             })
         } catch (error) {
             console.log(error)
-            res.json({
+            res.status(500).json({
                 "status": "ERROR",
                 "error": `${error}`
             })
@@ -108,7 +117,7 @@ app.post('/getData', (req, res) => {
 });
 
 app.post('/makeLink', (req, res) => {
-    console.log('/makeLink request received');
+    console.log('POST /makeLink | Request received');
     (async () => {
         try {
             // server-side validation and correction + variables
@@ -126,7 +135,7 @@ app.post('/makeLink', (req, res) => {
 
             let levelIDregex = /^[a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9]-[a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9]-[a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9]-[a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9]-[a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9]$/
             if (!(levelIDregex.test(levelID))) {
-                res.json({
+                res.status(400).json({
                     "status": "ERROR",
                     "error": "Validation error: Invalid level ID"
                 });
@@ -134,7 +143,7 @@ app.post('/makeLink', (req, res) => {
             }
 
             // actually doing the thing
-            console.log('Making request to create link')
+            console.log('POST /makeLink | Making request to create link')
             await axios.post(`https://firebasedynamiclinks.googleapis.com/v1/shortLinks?key=${process.env.LINK_KEY}`, {
                 "longDynamicLink": `https://exoracer.page.link:443/?ibi=com.nyanstudio.exoracer&link=https%3a%2f%2fexoracer.io%2f%3flink%3dLEVEL%26levelId%3d${levelID}%26levelVersion%3d${levelVersion}&si=${encodeURIComponent(imageURL)}&sd=${encodeURI(description).replace('%20', '+')}&st=${encodeURI(title).replace('%20', '+')}&apn=com.nyanstudio.exoracer&ofl=https%3a%2f%2fexoracer.io%2fdeeplinkfallback.php%3ftitle%3d${encodeURI(title).replace('%20', '%2b')}%26description%3d${encodeURI(description).replace('%20', '%2b')}%26imageUrl%3d${encodeURIComponent(imageURL)}`,
                 "suffix": {
@@ -142,7 +151,7 @@ app.post('/makeLink', (req, res) => {
                 }
             })
             .then((response) => {
-                console.log(`Link created: ${response.data.shortLink}`)
+                console.log(`POST /makeLink | Link created: ${response.data.shortLink}`)
                 res.json({
                     "status": "SUCCESS",
                     "link":`${response.data.shortLink}`
@@ -150,14 +159,14 @@ app.post('/makeLink', (req, res) => {
             })
             .catch((error) => {
                 console.log(error.message)
-                res.json({
+                res.status(500).json({
                     "status": "ERROR",
                     "error": `${error.message}`
                 })  
             })
         } catch (error) {
             console.log(error)
-            res.json({
+            res.status(500).json({
                 "status": "ERROR",
                 "error": `${error}`
             })  
@@ -165,4 +174,79 @@ app.post('/makeLink', (req, res) => {
     })();
 })
 
-app.listen('8080', () => {});
+app.get('/nojs', (req, res, next) => {
+    console.log(`GET /nojs | Request received`)
+    if (req.query.link) {
+        console.log(`GET /nojs | Making /getData request`)
+        try {
+            axios.post(`http://localhost:${server.address().port}/getData`, { "link": req.query.link })
+            .then((response) => {
+                let suffixOption = "Unguessable";
+                switch (req.query.link.length) {
+                    case 4:
+                        suffixOption = "Short";
+                        break;
+                    default:
+                        break;
+                }
+
+                res.render('nojs', { 'data': response.data, 'link': req.query.link })
+            })
+            .catch((error) => {
+                console.log(error)
+                res.status(500).render('nojs', { 'data': error.response.data, 'link': req.query.link })
+            })
+        } catch (error) {
+            console.log(error);
+
+            let errorData;
+            if (error.response && error.response.data) { errorData = { "error": error.response.data } }
+            else errorData = { "error": "Something went horribly wrong" }
+
+            res.status(500).render('nojs', { 'data': errorData, 'link': req.query.link })
+        }
+        return
+    }
+    if (req.query.suffix) {
+        console.log(`GET /nojs | Making /makeLink request`)
+        try {
+            console.log(req.query)
+            axios.post(`http://localhost:${server.address().port}/makeLink`, {
+                "levelID": req.query.levelID,
+                "title": req.query.title,
+                "description": req.query.description,
+                "imageURL": req.query.imageURL,
+                "levelVersion": req.query.levelVersion,
+                "suffix": req.query.suffix.toUpperCase()
+            })
+            .then((response) => {
+                res.render('nojs', { 'data': response.data, 'link': null })
+            })
+            .catch((error) => {
+                console.log(error)
+                res.status(500).render('nojs', { 'data': error.response.data, 'link': null })
+            })
+        } catch (error) {
+            console.log(error);
+                
+            let errorData;
+            if (error.response && error.response.data) { errorData = { "error": error.response.data } }
+            else errorData = { "error": "Something went horribly wrong" }
+                
+            res.status(500).render('nojs', { 'data': errorData, 'link': null })
+        }
+        return
+    }
+    res.status(200).render('nojs', { 'data': null, 'link': null })
+})
+
+app.get('/', (req, res) => {
+    console.log(`GET / | Request received`);
+    res.status(200).render('index');
+});
+
+app.get('*', (req, res) => {
+    res.redirect('index');
+})
+
+var server = app.listen('2000', () => console.log(`Running on port ${server.address().port}`));

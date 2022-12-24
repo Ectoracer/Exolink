@@ -2,6 +2,7 @@
 <html>
     <head>
         <meta charset="utf-8">
+        <noscript><meta http-equiv = "refresh" content = "0; url = /nojs" /></noscript>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Exolink</title>
         <meta property="og:title" content="Exolink">
@@ -10,11 +11,52 @@
         <style>
             :root { color-scheme: light dark; }
             * { font-family: Helvetica; }
+            a {
+                color: rgb(0, 64, 255);
+                text-decoration: none;
+                position: relative;
+                transition: color 0.25s;
+            }
+            a:after {
+                content: '';
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: 0%;
+                border-bottom: 2px solid rgb(0, 128, 255);
+                transition: 0.4s;
+            }
+            a:hover:after {
+                width: 100%;
+                color: rgb(0, 128, 255);
+            }
+            a:hover { color: rgb(0, 128, 255); }
+            @media (prefers-color-scheme: dark) {
+                a {
+                    color: rgb(0, 128, 255);
+                    text-decoration: none;
+                    position: relative;
+                    transition: color 0.25s;
+                }
+                a:after {
+                    content: '';
+                    position: absolute;
+                    bottom: 0;
+                    left: 0;
+                    width: 0%;
+                    border-bottom: 2px solid rgb(78, 166, 255);
+                    transition: 0.4s;
+                }
+                a:hover:after {
+                    width: 100%;
+                    color: rgb(78, 166, 255);
+                }
+                a:hover { color: rgb(78, 166, 255); }
+            }
         </style>
     </head>
     <body>
         <h1>Exolink <span style="font-size:45%"><a href="https://github.com/jbmagination/exolink">source code</a></span></h1>
-        <noscript>JavaScript is (unfortunately) required</noscript>
         <div>
             <label for="shareLink">exoracer.page.link/</label>
             <input type="text" id="shareLink" title="Share link" placeholder="Share link">
