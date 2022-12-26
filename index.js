@@ -4,7 +4,6 @@ const axios = require('axios').default;
 const puppeteer = require('puppeteer');
 const ejs = require('ejs');
 const { response } = require('express');
-
 require('dotenv').config();
 
 app.use(express.static('public'));
