@@ -3,7 +3,9 @@ const app = express();
 const axios = require('axios').default;
 const puppeteer = require('puppeteer');
 const ejs = require('ejs');
-const { response } = require('express');
+const fs = require('fs');
+var path = require('path');
+const { version } = require('./package.json');
 require('dotenv').config();
 
 app.use(express.static('public'));
@@ -56,7 +58,11 @@ app.post('/getData', (req, res) => {
 
             // actually doing the thing
             console.log(`POST /getData | Loading preview link for exoracer.page.link/${shortLink}`)
-            const browser = await puppeteer.launch();
+            
+            // replit shenanigans
+            let browser;
+            if (fs.existsSync('.replit') && fs.existsSync('replit.nix')) browser = await puppeteer.launch({ executablePath: '/nix/store/x205pbkd5xh5g4iv0g58xjla55has3cx-chromium-108.0.5359.94/bin/chromium', args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+            else browser = await puppeteer.launch();
             const page = await browser.newPage();
             
             await page.goto(`https://exoracer.page.link/${shortLink}${additionalCharacter}d=1`, {
@@ -200,7 +206,7 @@ app.get('/nojs', (req, res, next) => {
             if (error.response && error.response.data) { errorData = { "error": error.response.data } }
             else errorData = { "error": "Something went horribly wrong" }
 
-            res.status(500).render('nojs', { 'data': errorData, 'link': req.query.link })
+            res.status(500).render('nojs', { 'data': errorData, 'link': req.query.link, 'version': version, 'sourceCode': process.env.SOURCE_CODE })
         }
         return
     }
@@ -217,11 +223,11 @@ app.get('/nojs', (req, res, next) => {
                 "suffix": req.query.suffix.toUpperCase()
             })
             .then((response) => {
-                res.render('nojs', { 'data': response.data, 'link': null })
+                res.render('nojs', { 'data': response.data, 'link': null, 'version': version, 'sourceCode': process.env.SOURCE_CODE })
             })
             .catch((error) => {
                 console.log(error)
-                res.status(500).render('nojs', { 'data': error.response.data, 'link': null })
+                res.status(500).render('nojs', { 'data': error.response.data, 'link': null, 'version': version, 'sourceCode': process.env.SOURCE_CODE })
             })
         } catch (error) {
             console.log(error);
@@ -230,20 +236,27 @@ app.get('/nojs', (req, res, next) => {
             if (error.response && error.response.data) { errorData = { "error": error.response.data } }
             else errorData = { "error": "Something went horribly wrong" }
                 
-            res.status(500).render('nojs', { 'data': errorData, 'link': null })
+            res.status(500).render('nojs', { 'data': errorData, 'link': null, 'version': version, 'sourceCode': process.env.SOURCE_CODE })
         }
         return
     }
-    res.status(200).render('nojs', { 'data': null, 'link': null })
+    res.status(200).render('nojs', { 'data': null, 'link': null, 'version': version, 'sourceCode': process.env.SOURCE_CODE })
 })
 
 app.get('/', (req, res) => {
     console.log(`GET / | Request received`);
-    res.status(200).render('index');
+    res.status(200).render('index', { 'version': version, 'sourceCode': process.env.SOURCE_CODE });
 });
 
+if (process.env.SOURCE_CODE !== "https://github.com/jbmagination/exolink") {
+    app.get('/changes.txt', (req, res) => {
+        console.log(`GET /changes.txt | Request received`);
+        res.sendFile('changes.txt', { root: path.join(__dirname) })
+    })
+}
+
 app.get('*', (req, res) => {
-    res.redirect('index');
+    res.redirect('/');
 })
 
 var server = app.listen(process.env.PORT, () => console.log(`Running on port ${server.address().port}`));
