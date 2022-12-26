@@ -25,7 +25,7 @@ For most people, `SOURCE_CODE` should always be `https://github.com/jbmagination
 Then, install the necessary dependencies with `npm ci` or `npm install` - you can run Exolink from there with `node index`. You'll be able to access Exolink from the port listed in the console.
 
 ## License
-The `favicon.ico` files are under the copyright of (and belong to) Nyan Studio Games, and are admittedly used with forgiveness rather than permission.
+The `favicon.ico` file is under the copyright of (and belongs to) Nyan Studio Games, and is admittedly used with forgiveness rather than permission.
 
 Every other file is under the GNU Affero General Public License, version 3 of the License:
 
