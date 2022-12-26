@@ -10,20 +10,37 @@ When you're ready to create your link, choose "Make link", and the link will app
 [![Exolink demonstration](./demonstration.gif)](#)
 *This demonstration shows an earlier version of Exolink. The options and functionality are identical.*
 
-## Running an Exolink instance
-To run Exolink on your own server, you'll need to obtain the dynamic link key (39 characters). That will not be provided here, but it's not horribly difficult to obtain if you know how to proxy network requests.
-
-Once you have the key, make a `.env` file that looks something like this: 
+## Hosting an Exolink instance
+To host *any* Exolink instance, you'll need to obtain the dynamic link key (39 characters). That will not be provided here, but it's not horribly difficult to obtain if you know how to proxy network requests. Good luck!
+### Hosting locally
+Make a `.env` file that looks something like this: 
 ```env
-PORT=8080
+PORT=3000
 SOURCE_CODE=https://github.com/jbmagination/exolink
 LINK_KEY=[XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]
 ```
 
 For most people, `SOURCE_CODE` should always be `https://github.com/jbmagination/exolink`. Leave it as is unless you've modified the source code (you'll know if you have), in which case you'll need to publish the modified source code and put a link to it in `SOURCE_CODE`.
 
-Then, install the necessary dependencies with `npm ci` or `npm install` - you can run Exolink from there with `node index`. You'll be able to access Exolink from the port listed in the console.
+Then, install the necessary dependencies with `npm ci` or `npm install`. You can host Exolink from there with `node index`. You'll be able to access Exolink from the port listed in the console.
 
+### Hosting on Replit
+In your Replit, go to Shell and type `chromium`. Choose `chromium.out`. You only need to do this once.
+
+Then, go to Secrets and set the raw JSON to something like this:
+```
+{
+  "PORT": "3000",
+  "LINK_KEY": "[XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]",
+  "SOURCE_CODE": "https://github.com/jbmagination/exolink"
+}
+```
+
+`PORT` *must* be `3000`. Replit will not expose Exolink otherwise.
+
+For most people, `SOURCE_CODE` should always be `https://github.com/jbmagination/exolink`. Leave it as is unless you've modified the source code (you'll know if you have), in which case you'll need to publish the modified source code and put a link to it in `SOURCE_CODE`.
+
+You can now press Run. Exolink should appear in Replit's Webview, and others can access it from the Repl's link.
 ## License
 The `favicon.ico` file is under the copyright of (and belongs to) Nyan Studio Games, and is admittedly used with forgiveness rather than permission.
 
