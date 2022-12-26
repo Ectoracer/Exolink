@@ -1,4 +1,4 @@
-<!doctype HTML>
+<!doctype html>
 <html>
     <head>
         <meta charset="utf-8">
@@ -63,8 +63,13 @@
         </style>
     </head>
     <body>
-        <h1>Exolink <span style="font-size:45%"><a href="https://github.com/jbmagination/exolink">source code</a></span></h1>
-        <div id="error" style="color:darkred"><% if (data && data.error) { %> <%= "Something went wrong: " + data.error %> <% } %></div>
+        <% 
+            let modifiedLink = sourceCode;
+            if (sourceCode == "https://github.com/jbmagination/exolink") sourceCode = `<a href="https://github.com/jbmagination/exolink">source code</a>`
+            else sourceCode = `source code: <a href="https://github.com/jbmagination/exolink">original</a>, <a href="${modifiedLink}">modified</a>`
+        %> 
+        <h1>Exolink <span style="font-size:45%"><%= version %> | <%- sourceCode %></span></h1>
+        <% if (data && data.error) { %><div id="error" style="color:darkred"><%= "Something went wrong: " + data.error %></div><% } %>
         <% 
             let suffixOption;
 
