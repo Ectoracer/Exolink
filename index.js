@@ -62,7 +62,7 @@ app.post('/getData', (req, res) => {
             // replit and glitch shenanigans
             let browser;
             if (fs.existsSync('.replit') && fs.existsSync('replit.nix')) browser = await puppeteer.launch({ executablePath: '/nix/store/x205pbkd5xh5g4iv0g58xjla55has3cx-chromium-108.0.5359.94/bin/chromium', args: ['--no-sandbox', '--disable-setuid-sandbox'] });
-            else if (fs.existsSync('.glitchdotcom.json') && fs.existsSync('.glitch-assets')) browser = await puppeteer.launch({ executablePath: './node_modules/chromium/lib/chromium/chrome-linux/chrome', args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+            else if (fs.existsSync('.glitchdotcom.json')) browser = await puppeteer.launch({ executablePath: './node_modules/chromium/lib/chromium/chrome-linux/chrome', args: ['--no-sandbox', '--disable-setuid-sandbox'] });
             else browser = await puppeteer.launch();
             const page = await browser.newPage();
             

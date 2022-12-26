@@ -3,3 +3,4 @@ node_modules/
 **/.DS_Store
 .replit
 replit.nix
+.glitchdotcom.json
