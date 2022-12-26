@@ -4,7 +4,7 @@
   "description": "Make Exoracer share links with custom titles, descriptions, and images.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node ."
   },
   "repository": {
     "type": "git",
