@@ -4,6 +4,7 @@ const axios = require('axios').default;
 const puppeteer = require('puppeteer');
 const ejs = require('ejs');
 const { response } = require('express');
+
 require('dotenv').config();
 
 app.use(express.static('public'));
@@ -11,14 +12,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.set('view engine', 'ejs');
 
-let host = "localhost:8080"
-
 app.post('/getData', (req, res) => {
     console.log('POST /getData | Request received');
     (async () => {
         try {
             // server-side validation and correction
-            console.log(req.body)
             var shortLink = req.body.link
 
             if (!(req.body.link)) {
@@ -158,7 +156,7 @@ app.post('/makeLink', (req, res) => {
                 })
             })
             .catch((error) => {
-                console.log(error.message)
+                console.log(error.response.data.error)
                 res.status(500).json({
                     "status": "ERROR",
                     "error": `${error.message}`
