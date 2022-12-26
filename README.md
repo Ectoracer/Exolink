@@ -12,9 +12,10 @@ When you're ready to create your link, choose "Make link", and the link will app
 ## Running Exolink
 To run Exolink on your own server, you'll need to obtain the dynamic link key (39 characters). That will not be provided here, but it's not horribly difficult to obtain if you know how to proxy network requests.
 
-Once you have the key, make a `.env` file: 
+Once you have the key, make a `.env` file that looks something like this: 
 ```env
+PORT=8080
 LINK_KEY=[XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]
 ```
 
-Then, install the necessary dependencies with `npm ci` or `npm install` - you can run Exolink from there with `node index`. You'll be able to access Exolink on port `8080`.
+Then, install the necessary dependencies with `npm ci` or `npm install` - you can run Exolink from there with `node index`. You'll be able to access Exolink from the port listed in the console.
