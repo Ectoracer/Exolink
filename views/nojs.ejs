@@ -89,7 +89,11 @@
         <% if (data && data.error) { %> <br> <% } %>
         <div>
             <form>
-                <label for="shareLink">exoracer.page.link/</label>
+                <select id="domainPrefix" name="domainPrefix">
+                    <option value="exoracer">exoracer</option>
+                    <option value="exo">exo</option>
+                </select>
+                <label for="shareLink">.page.link/</label>
                 <input type="text" id="shareLink" name="link" title="Share link" placeholder="Share link" <% if(link && (!(link == null))) { %> value="<%=link%>"<% } %>>
                 <input type="submit" value="Get data">
             </form>
@@ -118,11 +122,10 @@
             </div>
             <div>
                 <label for="suffixOption">Suffix type:</label>
-                <input type="text" id="suffixOption" name="suffix" list="suffixList" <% if(suffixOption) { %> value="<%=suffixOption%>" <% } %>>
-                <datalist id="suffixList">
-                    <option value="Unguessable">
-                    <option value="Short">
-                </datalist>
+                <select id="suffixOption" name="suffixOption">
+                    <option value="UNGUESSABLE">Unguessable</option>
+                    <option value="SHORT">Short</option>
+                </select>
             </div>
             <br>
             <input type="submit" value="Make link">

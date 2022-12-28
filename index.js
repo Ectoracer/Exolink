@@ -4,9 +4,18 @@ const axios = require('axios').default;
 const puppeteer = require('puppeteer');
 const ejs = require('ejs');
 const fs = require('fs');
+const { google } = require('googleapis');
 var path = require('path');
 const { version } = require('./package.json');
 require('dotenv').config();
+
+let GoogleAuth;
+if (process.env.CUSTOM_LINK == "true") {
+    GoogleAuth = new google.auth.GoogleAuth({
+        keyFile: JSON.parse(process.env.SERVICE_ACCOUNT_JSON),
+        scopes: [ 'https://www.googleapis.com/auth/firebase' ]
+    })
+}
 
 app.use(express.static('public'));
 app.use(express.json());
@@ -27,10 +36,15 @@ app.post('/getData', (req, res) => {
                 })
                 return
             }
-            if(shortLink.startsWith('http://')) { shortLink = shortLink.substring(7) }
-            else if (shortLink.startsWith('https://')) { shortLink = shortLink.substring(8) }
+            if(shortLink.startsWith('http://')) shortLink = shortLink.substring(7)
+            else if (shortLink.startsWith('https://')) shortLink = shortLink.substring(8)
             if (shortLink.startsWith('preview.page.link/')) shortLink = shortLink.substring(18)
-            if (shortLink.startsWith('exoracer.page.link/')) shortLink = shortLink.substring(19)
+            if (shortLink.startsWith('exo.page.link/')) shortLink = shortLink.substring(14)
+            else if (shortLink.startsWith('exoracer.page.link/')) shortLink = shortLink.substring(19)
+
+            let domainPrefix;
+            domainPrefix = 'exoracer';
+            if (req.body.domainPrefix) domainPrefix = req.body.domainPrefix;
 
             let additionalCharacter;
             let suffixOption;
@@ -47,17 +61,19 @@ app.post('/getData', (req, res) => {
                         suffixOption = "UNGUESSABLE";
                         break;
                     default:
-                        res.status(400).json({
-                            "status": "ERROR",
-                            "error": "Validation error: Short links must be either 4 or 17 characters"
-                        });
-                        return;
+                        if (domainPrefix == "exoracer") {
+                            res.status(400).json({
+                                "status": "ERROR",
+                                "error": "Validation error: Short links must be either 4 or 17 characters"
+                            });
+                            return;
+                        }
                         break;
                 }
             }
 
             // actually doing the thing
-            console.log(`POST /getData | Loading preview link for exoracer.page.link/${shortLink}`)
+            console.log(`POST /getData | Loading preview link for ${domainPrefix}.page.link/${shortLink}`)
             
             // replit and glitch shenanigans
             let browser;
@@ -66,18 +82,20 @@ app.post('/getData', (req, res) => {
             else browser = await puppeteer.launch();
             const page = await browser.newPage();
             
-            await page.goto(`https://exoracer.page.link/${shortLink}${additionalCharacter}d=1`, {
+            await page.goto(`https://${domainPrefix}.page.link/${shortLink}${additionalCharacter}d=1`, {
                 waitUntil: 'networkidle0'
             });
             
-            const link = await page.evaluate(() => {
+            var link = await page.evaluate(() => {
                 if (document.getElementsByClassName('cacJ4e')[0] && document.getElementsByClassName('cacJ4e')[0].getElementsByTagName('a')[0]) {
                     return document.getElementsByClassName('cacJ4e')[0].getElementsByTagName('a')[0].href.baseVal;
                 } else {
                     return undefined;
                 }
             });
-            if (link) { 
+
+            if (link && (link.indexOf('exo.page.link') > -1)) link = new URL(link).searchParams.get('link')
+            if (link && (link.indexOf('deeplinkfallback.php') > -1)) { 
                 console.log('POST /getData | Long dynamic link found'); 
             } else {
                 console.log('POST /getData | Long dynamic link not found');
@@ -101,6 +119,7 @@ app.post('/getData', (req, res) => {
 
             res.json({
                 "status": "SUCCESS",
+                "domainPrefix": domainPrefix,
                 "inputChars": shortLink,
                 "dynamicLink": link,
                 "title": title,
@@ -130,11 +149,14 @@ app.post('/makeLink', (req, res) => {
             let description = req.body.description;
             let imageURL = req.body.imageURL;
             let levelVersion = parseInt(req.body.levelVersion);
+            let customSuffix = req.body.customSuffix;
             let suffixOption;
 
+            // todo: get latest level version from level ID (if existing) instead of v1 default
             if (levelVersion.toString() == "NaN") levelVersion = 1
 
-            if (req.body.suffix == "SHORT") suffixOption = "SHORT"
+            if (req.body.suffixOption == "SHORT") suffixOption = "SHORT"
+            else if ((req.body.suffixOption == "CUSTOM") && GoogleAuth) suffixOption = "CUSTOM"
             else suffixOption = "UNGUESSABLE"
 
             let levelIDregex = /^[a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9]-[a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9]-[a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9]-[a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9]-[a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9]$/
@@ -148,26 +170,69 @@ app.post('/makeLink', (req, res) => {
 
             // actually doing the thing
             console.log('POST /makeLink | Making request to create link')
-            await axios.post(`https://firebasedynamiclinks.googleapis.com/v1/shortLinks?key=${process.env.LINK_KEY}`, {
-                "longDynamicLink": `https://exoracer.page.link:443/?ibi=com.nyanstudio.exoracer&link=https%3a%2f%2fexoracer.io%2f%3flink%3dLEVEL%26levelId%3d${levelID}%26levelVersion%3d${levelVersion}&si=${encodeURIComponent(imageURL)}&sd=${encodeURI(description).replace('%20', '+')}&st=${encodeURI(title).replace('%20', '+')}&apn=com.nyanstudio.exoracer&ofl=https%3a%2f%2fexoracer.io%2fdeeplinkfallback.php%3ftitle%3d${encodeURI(title).replace('%20', '%2b')}%26description%3d${encodeURI(description).replace('%20', '%2b')}%26imageUrl%3d${encodeURIComponent(imageURL)}`,
-                "suffix": {
-                    "option": suffixOption
-                }
-            })
-            .then((response) => {
-                console.log(`POST /makeLink | Link created: ${response.data.shortLink}`)
-                res.json({
-                    "status": "SUCCESS",
-                    "link":`${response.data.shortLink}`
+            let request;
+            if ((suffixOption == "CUSTOM") && (GoogleAuth !== undefined)) {
+                console.log('POST /makeLink | Custom suffix chosen')
+                GoogleAuth.request({
+                    method: "POST",
+                    url: "https://firebasedynamiclinks.googleapis.com/v1/managedShortLinks:create",
+                    data: {
+                        "name": `${customSuffix} | ${title}`,
+                        "dynamicLinkInfo": {
+                            "domainUriPrefix": "https://exo.page.link",
+                            "link": `https://exoracer.page.link:443/?ibi=com.nyanstudio.exoracer&link=https%3a%2f%2fexoracer.io%2f%3flink%3dLEVEL%26levelId%3d${levelID}%26levelVersion%3d${levelVersion}&si=${encodeURIComponent(imageURL)}&sd=${encodeURI(description).replace('%20', '+')}&st=${encodeURI(title).replace('%20', '+')}&apn=com.nyanstudio.exoracer&ofl=https%3a%2f%2fexoracer.io%2fdeeplinkfallback.php%3ftitle%3d${encodeURI(title).replace('%20', '%2b')}%26description%3d${encodeURI(description).replace('%20', '%2b')}%26imageUrl%3d${encodeURIComponent(imageURL)}`,
+                            "socialMetaTagInfo": {
+                                "socialTitle": title,
+                                "socialDescription": description,
+                                "socialImageLink": imageURL
+                            },
+                            "navigationInfo": {
+                                "enableForcedRedirect": true
+                            }
+                        },
+                        "suffix": {
+                            "option": suffixOption,
+                            "customSuffix": customSuffix
+                        }
+                    }
                 })
-            })
-            .catch((error) => {
-                console.log(error.response.data.error)
-                res.status(500).json({
-                    "status": "ERROR",
-                    "error": `${error.message}`
-                })  
-            })
+                .then((response) => {
+                    console.log(`POST /makeLink | Link created: ${response.data.managedShortLink.link}`)
+                    res.json({
+                        "status": "SUCCESS",
+                        "link":`${response.data.managedShortLink.link}`
+                    })
+                })
+                .catch((error) => {
+                    console.log(error)
+                    res.status(500).json({
+                        "status": "ERROR",
+                        "error": `${error}`
+                    })  
+                })
+            } else { 
+                console.log('POST /makeLink | Unguessable or short suffix chosen')
+                await axios.post(`https://firebasedynamiclinks.googleapis.com/v1/shortLinks?key=${process.env.LINK_KEY}`, {
+                    "longDynamicLink": `https://exoracer.page.link:443/?ibi=com.nyanstudio.exoracer&link=https%3a%2f%2fexoracer.io%2f%3flink%3dLEVEL%26levelId%3d${levelID}%26levelVersion%3d${levelVersion}&si=${encodeURIComponent(imageURL)}&sd=${encodeURI(description).replace('%20', '+')}&st=${encodeURI(title).replace('%20', '+')}&apn=com.nyanstudio.exoracer&ofl=https%3a%2f%2fexoracer.io%2fdeeplinkfallback.php%3ftitle%3d${encodeURI(title).replace('%20', '%2b')}%26description%3d${encodeURI(description).replace('%20', '%2b')}%26imageUrl%3d${encodeURIComponent(imageURL)}`,
+                    "suffix": {
+                        "option": suffixOption
+                    }
+                })
+                .then((response) => {
+                    console.log(`POST /makeLink | Link created: ${response.data.shortLink}`)
+                    res.json({
+                        "status": "SUCCESS",
+                        "link":`${response.data.shortLink}`
+                    })
+                })
+                .catch((error) => {
+                    console.log(error.response.data.error)
+                    res.status(500).json({
+                        "status": "ERROR",
+                        "error": `${error.message}`
+                    })  
+                })
+            }
         } catch (error) {
             console.log(error)
             res.status(500).json({
@@ -183,7 +248,10 @@ app.get('/nojs', (req, res, next) => {
     if (req.query.link) {
         console.log(`GET /nojs | Making /getData request`)
         try {
-            axios.post(`http://localhost:${server.address().port}/getData`, { "link": req.query.link })
+            axios.post(`http://localhost:${server.address().port}/getData`, { 
+                "link": req.query.link,
+                "domainPrefix": req.query.domainPrefix
+            })
             .then((response) => {
                 let suffixOption = "Unguessable";
                 switch (req.query.link.length) {
@@ -194,11 +262,11 @@ app.get('/nojs', (req, res, next) => {
                         break;
                 }
 
-                res.render('nojs', { 'data': response.data, 'link': req.query.link })
+                res.render('nojs', { 'data': response.data, 'link': req.query.link, 'version': version, 'sourceCode': process.env.SOURCE_CODE })
             })
             .catch((error) => {
                 console.log(error)
-                res.status(500).render('nojs', { 'data': error.response.data, 'link': req.query.link })
+                res.status(500).render('nojs', { 'data': error.response.data, 'link': req.query.link, 'version': version, 'sourceCode': process.env.SOURCE_CODE })
             })
         } catch (error) {
             console.log(error);
@@ -211,7 +279,7 @@ app.get('/nojs', (req, res, next) => {
         }
         return
     }
-    if (req.query.suffix) {
+    if (req.query.suffixOption) {
         console.log(`GET /nojs | Making /makeLink request`)
         try {
             console.log(req.query)
@@ -221,7 +289,7 @@ app.get('/nojs', (req, res, next) => {
                 "description": req.query.description,
                 "imageURL": req.query.imageURL,
                 "levelVersion": req.query.levelVersion,
-                "suffix": req.query.suffix.toUpperCase()
+                "suffix": req.query.suffixOption.toUpperCase()
             })
             .then((response) => {
                 res.render('nojs', { 'data': response.data, 'link': null, 'version': version, 'sourceCode': process.env.SOURCE_CODE })

@@ -70,7 +70,11 @@
         %> 
         <h1>Exolink <span style="font-size:45%"><%= version %> | <%- sourceCode %></span></h1>
         <div>
-            <label for="shareLink">exoracer.page.link/</label>
+            <select id="domainPrefix">
+                <option value="exoracer">exoracer</option>
+                <option value="exo">exo</option>
+            </select>
+            <label for="shareLink">.page.link/</label>
             <input type="text" id="shareLink" title="Share link" placeholder="Share link">
             <button onclick="javascript:getData()">Get data</button>
         </div>
@@ -99,12 +103,18 @@
             </div>
             <div>
                 <label for="suffixOption">Suffix type:</label>
-                <input type="text" id="suffixOption" list="suffixList">
-                <datalist id="suffixList">
-                    <option value="Unguessable">
-                    <option value="Short">
-                </datalist>
+                <select id="suffixOption" onchange="showSuffixOption()">
+                    <option value="UNGUESSABLE">Unguessable</option>
+                    <option value="SHORT">Short</option>
+                    <% if (process.env.CUSTOM_LINK == "true") { %> <option value="CUSTOM">Custom</option> <% } %>
+                </select>
             </div>
+            <% if (process.env.CUSTOM_LINK == "true") { %>
+            <div>
+                <label id="customSuffixLabel" for="customSuffix" hidden="true">Suffix:</label>
+                <input type="text" id="customSuffix" placeholder="Suffix" hidden="true">
+            </div>
+            <% } %>
             <br>
             <button onclick="javascript:makeLink()">Make link</button>
         </div>
@@ -137,13 +147,19 @@
                 document.getElementById('imageURL').setAttribute("readonly", "readonly")
                 document.getElementById('levelVersion').setAttribute("readonly", "readonly")
                 document.getElementById('suffixOption').setAttribute("readonly", "readonly")
+                if (document.getElementById('customSuffix')) document.getElementById('customSuffix').setAttribute("readonly", "readonly")
 
                 // client-side validation and correction
+                var domainPrefix = document.getElementById('domainPrefix').value
+                domainPrefix = domainPrefix.trim()
+                if(domainPrefix !== "exo") domainPrefix = "exoracer"
+
                 var link = document.getElementById('shareLink').value
                 link = link.trim()
                 if(link.startsWith('http://')) { link = link.substring(7) }
                 else if (link.startsWith('https://')) { link = link.substring(8) }
                 if (link.startsWith('preview.page.link/')) link = link.substring(18)
+                if (link.startsWith('exo.page.link/')) link = link.substring(14)
                 if (link.startsWith('exoracer.page.link/')) link = link.substring(19)
 
                 document.getElementById('shareLink').value = link
@@ -156,17 +172,20 @@
                     case 17:
                         break;
                     default:
-                        if (!(link[0] == '?')) {
-                            alert('Something went wrong: Validation error: Short links must be either 4 or 17 characters')
-                            document.getElementById('shareLink').removeAttribute("readonly")
-                            document.getElementById('levelID').removeAttribute("readonly")
-                            document.getElementById('title').removeAttribute("readonly")
-                            document.getElementById('description').removeAttribute("readonly")
-                            document.getElementById('imageURL').removeAttribute("readonly")
-                            document.getElementById('levelVersion').removeAttribute("readonly")
-                            document.getElementById('suffixOption').removeAttribute("readonly")
-                            return
-                        }
+                        if (domainPrefix == "exoracer") {
+                            if (!(link[0] == '?')) {
+                                alert('Something went wrong: Validation error: Short links must be either 4 or 17 characters')
+                                document.getElementById('shareLink').removeAttribute("readonly")
+                                document.getElementById('levelID').removeAttribute("readonly")
+                                document.getElementById('title').removeAttribute("readonly")
+                                document.getElementById('description').removeAttribute("readonly")
+                                document.getElementById('imageURL').removeAttribute("readonly")
+                                document.getElementById('levelVersion').removeAttribute("readonly")
+                                document.getElementById('suffixOption').removeAttribute("readonly")
+                                document.getElementById('customSuffix').removeAttribute("readonly")
+                                return
+                            }
+                        } else suffixOption = "Custom";
                         break;
                 }
 
@@ -174,7 +193,10 @@
                 fetch('/getData', {
                     method: 'POST', 
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ "link": link })
+                    body: JSON.stringify({ 
+                        "link": link,
+                        "domainPrefix": domainPrefix 
+                    })
                 })
                 .then((response) => response.json())
                 .then((data) => {
@@ -193,6 +215,7 @@
                             document.getElementById('imageURL').removeAttribute("readonly")
                             document.getElementById('levelVersion').removeAttribute("readonly")
                             document.getElementById('suffixOption').removeAttribute("readonly")
+                            if (document.getElementById('customSuffix')) document.getElementById('customSuffix').removeAttribute("readonly")
                             break;
                         case "ERROR":
                             alert("Something went wrong: " + data.error)
@@ -204,6 +227,7 @@
                             document.getElementById('imageURL').removeAttribute("readonly")
                             document.getElementById('levelVersion').removeAttribute("readonly")
                             document.getElementById('suffixOption').removeAttribute("readonly")
+                            if (document.getElementById('customSuffix')) document.getElementById('customSuffix').removeAttribute("readonly")
                             break;
                         default:
                             alert('Something went horribly wrong')
@@ -215,6 +239,7 @@
                             document.getElementById('imageURL').removeAttribute("readonly")
                             document.getElementById('levelVersion').removeAttribute("readonly")
                             document.getElementById('suffixOption').removeAttribute("readonly")
+                            if (document.getElementById('customSuffix')) document.getElementById('customSuffix').removeAttribute("readonly")
                             break;
                     }
                 })
@@ -228,6 +253,7 @@
                     document.getElementById('imageURL').removeAttribute("readonly")
                     document.getElementById('levelVersion').removeAttribute("readonly")
                     document.getElementById('suffixOption').removeAttribute("readonly")
+                    if (document.getElementById('customSuffix')) document.getElementById('customSuffix').removeAttribute("readonly")
                 })
             }
 
@@ -238,7 +264,8 @@
                 document.getElementById('description').setAttribute("readonly", "readonly")
                 document.getElementById('imageURL').setAttribute("readonly", "readonly")
                 document.getElementById('levelVersion').setAttribute("readonly", "readonly")
-                document.getElementById('suffixOption').removeAttribute("readonly")
+                document.getElementById('suffixOption').setAttribute("readonly", "readonly")
+                if (document.getElementById('customSuffix')) document.getElementById('customSuffix').setAttribute("readonly", "readonly")
                 
                 // client-side validation
                 let levelIDregex = /^[a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9]-[a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9]-[a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9]-[a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9]-[a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9]$/
@@ -251,6 +278,7 @@
                     document.getElementById('imageURL').removeAttribute("readonly")
                     document.getElementById('levelVersion').removeAttribute("readonly")
                     document.getElementById('suffixOption').removeAttribute("readonly")
+                    if (document.getElementById('customSuffix')) document.getElementById('customSuffix').removeAttribute("readonly")
                     return
                 }
 
@@ -267,7 +295,8 @@
                         "description": document.getElementById('description').value,
                         "imageURL": document.getElementById('imageURL').value,
                         "levelVersion": document.getElementById('levelVersion').value,
-                        "suffix": document.getElementById('suffixOption').value.toUpperCase()
+                        "suffixOption": document.getElementById('suffixOption').value,
+                        "customSuffix": document.getElementById('customSuffix').value
                     })
                 })
                 .then((response) => response.json())
@@ -282,6 +311,7 @@
                             document.getElementById('imageURL').removeAttribute("readonly")
                             document.getElementById('levelVersion').removeAttribute("readonly")
                             document.getElementById('suffixOption').removeAttribute("readonly")
+                            if (document.getElementById('customSuffix')) document.getElementById('customSuffix').removeAttribute("readonly")
                             break;
                         case "ERROR":
                             alert("Something went wrong: " + data.error)
@@ -293,6 +323,7 @@
                             document.getElementById('imageURL').removeAttribute("readonly")
                             document.getElementById('levelVersion').removeAttribute("readonly")
                             document.getElementById('suffixOption').removeAttribute("readonly")
+                            if (document.getElementById('customSuffix')) document.getElementById('customSuffix').removeAttribute("readonly")
                             break;
                         default:
                             alert('Something went horribly wrong')
@@ -304,6 +335,7 @@
                             document.getElementById('imageURL').removeAttribute("readonly")
                             document.getElementById('levelVersion').removeAttribute("readonly")
                             document.getElementById('suffixOption').removeAttribute("readonly")
+                            if (document.getElementById('customSuffix')) document.getElementById('customSuffix').removeAttribute("readonly")
                             break;
                     }
                 })
@@ -317,7 +349,18 @@
                     document.getElementById('imageURL').removeAttribute("readonly")
                     document.getElementById('levelVersion').removeAttribute("readonly")
                     document.getElementById('suffixOption').removeAttribute("readonly")
+                    if (document.getElementById('customSuffix')) document.getElementById('customSuffix').removeAttribute("readonly")
                 })
+            }
+
+            function showSuffixOption() {
+                if (document.getElementById('suffixOption').value == "CUSTOM") {
+                    document.getElementById('customSuffix').hidden = false
+                    document.getElementById('customSuffixLabel').hidden = false
+                } else {
+                    document.getElementById('customSuffix').hidden = true
+                    document.getElementById('customSuffixLabel').hidden = true
+                }
             }
         </script>
     </body>

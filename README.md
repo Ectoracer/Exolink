@@ -20,9 +20,12 @@ Make a `.env` file that looks something like this:
 PORT=3000
 SOURCE_CODE=https://github.com/jbmagination/exolink
 LINK_KEY=[XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]
+CUSTOM_LINK=false
 ```
 
 For most people, `SOURCE_CODE` should always be `https://github.com/jbmagination/exolink`. Leave it as is unless you've modified the source code (you'll know if you have), in which case you'll need to publish the modified source code and put a link to it in `SOURCE_CODE`.
+
+`CUSTOM_LINK` *must* be false. Only official instances have access to custom links (`exo.page.link`), because it requires access to the Firebase project associated with it.
 
 Then, install the necessary dependencies with `npm ci` or `npm install`. You can host Exolink from there with `node index`. You'll be able to access Exolink from the port listed in the console.
 
@@ -34,13 +37,16 @@ Then, go to Secrets and set the raw JSON to something like this:
 {
   "PORT": "3000",
   "SOURCE_CODE": "https://github.com/jbmagination/exolink",
-  "LINK_KEY": "[XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]"
+  "LINK_KEY": "[XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]",
+  "CUSTOM_LINK": "false"
 }
 ```
 
 `PORT` *must* be `3000`. Replit will not expose Exolink otherwise.
 
 For most people, `SOURCE_CODE` should always be `https://github.com/jbmagination/exolink`. Leave it as is unless you've modified the source code (you'll know if you have), in which case you'll need to publish the modified source code and put a link to it in `SOURCE_CODE`.
+
+`CUSTOM_LINK` *must* be false. Only official instances have access to custom links (`exo.page.link`), because it requires access to the Firebase project associated with it.
 
 You can now press Run. Exolink should appear in Replit's Webview, and others can access it from the Repl's link.
 
@@ -52,11 +58,14 @@ Regardless of how you made your project, go to .env, and set it to Plaintext. Re
 PORT=3000
 SOURCE_CODE=https://github.com/jbmagination/exolink
 LINK_KEY=[XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]
+CUSTOM_LINK=false
 ```
 
 `PORT` *must* be `3000`. Glitch will not expose Exolink otherwise.
 
 For most people, `SOURCE_CODE` should always be `https://github.com/jbmagination/exolink`. Leave it as is unless you've modified the source code (you'll know if you have), in which case you'll need to publish the modified source code and put a link to it in `SOURCE_CODE`.
+
+`CUSTOM_LINK` *must* be false. Only official instances have access to the custom links (`exo.page.link`), because it requires access to the Firebase project associated with it.
 
 Then, install the necessary dependencies with `npm ci` or `npm install`. Exolink should be accessible from the project page.
 
