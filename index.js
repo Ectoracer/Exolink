@@ -163,13 +163,6 @@ app.post('/makeLink', (req, res) => {
             let customSuffix = req.body.customSuffix;
             let suffixOption;
 
-            // todo: get latest level version from level ID (if existing) instead of v1 default
-            if (levelVersion.toString() == "NaN") levelVersion = 1
-
-            if (req.body.suffixOption == "SHORT") suffixOption = "SHORT"
-            else if ((req.body.suffixOption == "CUSTOM") && GoogleAuth) suffixOption = "CUSTOM"
-            else suffixOption = "UNGUESSABLE"
-
             let levelIDregex = /^[a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9]-[a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9]-[a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9]-[a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9]-[a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9]$/
             if (!(levelIDregex.test(levelID))) {
                 res.status(400).json({
@@ -179,11 +172,40 @@ app.post('/makeLink', (req, res) => {
                 return
             }
 
+            console.log('POST /makeLink | Making request to ExoStats')
+            let noLevelID;
+            noLevelID = false;
+            await axios(`https://exo.lgms.nl/?api&userlevel=${levelID}`)
+            .then((response) => {
+                if (levelVersion.toString() == "NaN") levelVersion = response.data.version
+            })
+            .catch((error) => {
+                if (error.response.data.error == "Level ID not found") noLevelID = true
+                else {
+                    console.log(error)
+                    levelVersion = 1
+                }
+            })
+
+            // i should not have to do it this way
+            // JavaScript is an odd language
+            if (noLevelID) {
+                res.status(400).json({
+                    "status": "ERROR",
+                    "error": "Validation error: Invalid level ID"
+                });
+                return
+            }
+
+            if (req.body.suffixOption == "SHORT") suffixOption = "SHORT"
+            else if ((req.body.suffixOption == "CUSTOM") && GoogleAuth) suffixOption = "CUSTOM"
+            else suffixOption = "UNGUESSABLE"
+
             // actually doing the thing
             console.log('POST /makeLink | Making request to create link')
             if ((suffixOption == "CUSTOM") && (GoogleAuth !== undefined)) {
                 console.log('POST /makeLink | Custom suffix chosen')
-                GoogleAuth.request({
+                 await GoogleAuth.request({
                     method: "POST",
                     url: "https://firebasedynamiclinks.googleapis.com/v1/managedShortLinks:create",
                     data: {
@@ -253,7 +275,7 @@ app.post('/makeLink', (req, res) => {
     })();
 })
 
-app.get('/nojs', (req, res, next) => {
+app.get('/nojs', (req, res) => {
     console.log(`GET /nojs | Request received`)
     if (req.query.link) {
         console.log(`GET /nojs | Making /getData request`)
