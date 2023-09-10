@@ -105,6 +105,8 @@ app.post('/getData', (req, res) => {
                 }
             });
 
+            if (link) axios.post(process.env.DISCORD_WEBHOOK, { content: `New link: https://${domainPrefix}.page.link/${shortLink}`});
+
             if (link && (link.indexOf('exo.page.link') > -1)) link = new URL(link).searchParams.get('link')
             if (link && (link.indexOf('deeplinkfallback.php') > -1)) { 
                 console.log('POST /getData | Long dynamic link found'); 
@@ -234,6 +236,7 @@ app.post('/makeLink', (req, res) => {
                         "status": "SUCCESS",
                         "link":`${response.data.managedShortLink.link}`
                     })
+                    axios.post(process.env.DISCORD_WEBHOOK, { content: `New link: ${response.data.managedShortLink.link}`})
                 })
                 .catch((error) => {
                     console.log(error)
@@ -256,6 +259,7 @@ app.post('/makeLink', (req, res) => {
                         "status": "SUCCESS",
                         "link":`${response.data.shortLink}`
                     })
+                    axios.post(process.env.DISCORD_WEBHOOK, { content: `New link: ${response.data.shortLink}`})
                 })
                 .catch((error) => {
                     console.log(error.response.data.error)
@@ -349,7 +353,7 @@ app.get('/', (req, res) => {
     res.status(200).render('index', { 'version': version, 'sourceCode': process.env.SOURCE_CODE });
 });
 
-if (process.env.SOURCE_CODE !== "https://github.com/jbmagination/exolink") {
+if (!((process.env.SOURCE_CODE == "https://github.com/jbmagination/exolink") || (process.env.SOURCE_CODE == "https://github.com/Ectoracer/Exolink"))) {
     app.get('/changes.txt', (req, res) => {
         console.log(`GET /changes.txt | Request received`);
         res.sendFile('changes.txt', { root: path.join(__dirname) })
