@@ -65,8 +65,8 @@
     <body>
         <% 
             let modifiedLink = sourceCode;
-            if (sourceCode == "https://github.com/jbmagination/exolink") sourceCode = `<a href="https://github.com/jbmagination/exolink">source code</a>`
-            else sourceCode = `source code: <a href="${modifiedLink}">modified</a> (<a href="/changes.txt">changes</a>), <a href="https://github.com/jbmagination/exolink">original</a>`
+            if ((sourceCode == "https://github.com/jbmagination/exolink" || sourceCode == "https://github.com/Ectoracer/Exolink")) sourceCode = `<a href="https://github.com/Ectoracer/Exolink">source code</a>`
+            else sourceCode = `source code: <a href="${modifiedLink}">modified</a> (<a href="/changes.txt">changes</a>), <a href="https://github.com/Ectoracer/Exolink">original</a>`
         %> 
         <h1>Exolink <span style="font-size:45%"><%= version %> | <%- sourceCode %></span></h1>
         <div>
