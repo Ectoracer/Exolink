@@ -88,9 +88,9 @@ app.post('/getData', (req, res) => {
             
             // replit and glitch shenanigans
             let browser;
-            if (fs.existsSync('.replit') && fs.existsSync('replit.nix')) browser = await puppeteer.launch({ executablePath: '/nix/store/x205pbkd5xh5g4iv0g58xjla55has3cx-chromium-108.0.5359.94/bin/chromium', args: ['--no-sandbox', '--disable-setuid-sandbox'] });
-            else if (fs.existsSync('.glitchdotcom.json')) browser = await puppeteer.launch({ executablePath: './node_modules/chromium/lib/chromium/chrome-linux/chrome', args: ['--no-sandbox', '--disable-setuid-sandbox'] });
-            else browser = await puppeteer.launch();
+            if (fs.existsSync('.replit') && fs.existsSync('replit.nix')) browser = await puppeteer.launch({ headless: 'new', executablePath: '/nix/store/x205pbkd5xh5g4iv0g58xjla55has3cx-chromium-108.0.5359.94/bin/chromium', args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+            else if (fs.existsSync('.glitchdotcom.json')) browser = await puppeteer.launch({ headless: 'new', executablePath: './node_modules/chromium/lib/chromium/chrome-linux/chrome', args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+            else browser = await puppeteer.launch({ headless: 'new' });
             const page = await browser.newPage();
             
             await page.goto(`https://${domainPrefix}.page.link/${shortLink}${additionalCharacter}d=1`, {
@@ -321,7 +321,7 @@ app.get('/nojs', (req, res) => {
                 "description": req.query.description,
                 "imageURL": req.query.imageURL,
                 "levelVersion": req.query.levelVersion,
-                "suffix": req.query.suffixOption.toUpperCase()
+                "suffixOption": req.query.suffixOption.toUpperCase()
             })
             .then((response) => {
                 res.render('nojs', { 'data': response.data, 'link': null, 'version': version, 'sourceCode': process.env.SOURCE_CODE })
