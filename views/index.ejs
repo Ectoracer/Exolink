@@ -412,12 +412,14 @@
             }
 
             function showSuffixOption() {
-                if (document.getElementById('suffixOption').value == "CUSTOM") {
-                    document.getElementById('customSuffix').hidden = false
-                    document.getElementById('customSuffixLabel').hidden = false
-                } else {
-                    document.getElementById('customSuffix').hidden = true
-                    document.getElementById('customSuffixLabel').hidden = true
+                if (document.getElementById('customSuffix') && document.getElementById('customSuffixLabel')) {
+                    if (document.getElementById('suffixOption').value == "CUSTOM") {
+                        document.getElementById('customSuffix').hidden = false
+                        document.getElementById('customSuffixLabel').hidden = false
+                    } else {
+                        document.getElementById('customSuffix').hidden = true
+                        document.getElementById('customSuffixLabel').hidden = true
+                    }
                 }
             }
         </script>
