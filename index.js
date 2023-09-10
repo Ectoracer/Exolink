@@ -105,7 +105,7 @@ app.post('/getData', (req, res) => {
                 }
             });
 
-            if (link) axios.post(process.env.DISCORD_WEBHOOK, { content: `New link: https://${domainPrefix}.page.link/${shortLink}`});
+            if (link && (process.env.DISCORD_WEBHOOK.startsWith('https://discord.com/api/webhooks/'))) axios.post(process.env.DISCORD_WEBHOOK, { content: `New link: https://${domainPrefix}.page.link/${shortLink}`});
 
             if (link && (link.indexOf('exo.page.link') > -1)) link = new URL(link).searchParams.get('link')
             if (link && (link.indexOf('deeplinkfallback.php') > -1)) { 
@@ -236,7 +236,7 @@ app.post('/makeLink', (req, res) => {
                         "status": "SUCCESS",
                         "link":`${response.data.managedShortLink.link}`
                     })
-                    axios.post(process.env.DISCORD_WEBHOOK, { content: `New link: ${response.data.managedShortLink.link}`})
+                    if (process.env.DISCORD_WEBHOOK.startsWith('https://discord.com/api/webhooks/')) axios.post(process.env.DISCORD_WEBHOOK, { content: `New link: ${response.data.managedShortLink.link}`})
                 })
                 .catch((error) => {
                     console.log(error)
@@ -259,7 +259,7 @@ app.post('/makeLink', (req, res) => {
                         "status": "SUCCESS",
                         "link":`${response.data.shortLink}`
                     })
-                    axios.post(process.env.DISCORD_WEBHOOK, { content: `New link: ${response.data.shortLink}`})
+                    if (process.env.DISCORD_WEBHOOK.startsWith('https://discord.com/api/webhooks/')) axios.post(process.env.DISCORD_WEBHOOK, { content: `New link: ${response.data.shortLink}`})
                 })
                 .catch((error) => {
                     console.log(error.response.data.error)
