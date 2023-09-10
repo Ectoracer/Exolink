@@ -9,20 +9,35 @@
         <meta property="og:description" content="Exolink lets you make Exoracer share links with custom titles, descriptions, and images.">
         <link rel="icon" href="/favicon.ico">
         <style>
+            @import url("https://fontlay.com/css2?family=Monoton&family=Oxanium:wght@700&display=swap");
             :root { color-scheme: light dark; }
-            * { font-family: Helvetica; }
-            a {
-                color: rgb(0, 64, 255);
-                text-decoration: none;
-                position: relative;
-                transition: color 0.25s;
+            * {
+                font-family: "Oxanium", cursive;
+                color: #d9d9d9;
+                text-align: center;
+                outline: none;
+                margin: 0;
+                padding: 0;
             }
             body {
+                margin: 0 auto;
+                background-image: url(exo_bg.png);
                 position: absolute;
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
                 text-align: center;
+            }
+            h1 {
+                font-family: "Monoton", cursive;
+                font-size: 50px;
+            }
+            h3 { font-size: 20px; }
+            a {
+                color: rgb(0, 64, 255);
+                text-decoration: none;
+                position: relative;
+                transition: color 0.25s;
             }
             a:after {
                 content: '';
@@ -60,14 +75,58 @@
                 }
                 a:hover { color: rgb(78, 166, 255); }
             }
+            input[type="text"], input[type="number"] {
+                font-size: 20px;
+                text-align: left;
+                border-color: #5a3ab3;
+                background-color: #3a2574;
+                border-style: solid;
+                border-width: 3px;
+                border-radius: 2.5px;
+                margin: 2px;
+                width: 300px;
+            }
+            label {
+                font-size: 20px;
+            }
+            input[type="text"]::placeholder,input[type="number"]::placeholder  {
+                font-style: italic;
+            }
+            select {
+                cursor: pointer;
+                text-align: left;
+                border-radius: 3px;
+                background-color: #7b4afa;
+                border-style: none;
+                padding: 3px;
+                font-size: 20px;
+            }
+            input[type="submit"] {
+                cursor: pointer;
+                margin: 10px;
+                border-radius: 3px;
+                background-color: #7b4afa;
+                border-style: none;
+                padding: 4px;
+                font-size: 20px;
+            }
+            button {
+                cursor: pointer;
+                margin: 10px;
+                border-radius: 3px;
+                background-color: #7b4afa;
+                border-style: none;
+                padding: 4px;
+                font-size: 20px;
+            }
         </style>
     </head>
     <body>
         <% 
             let modifiedLink = sourceCode;
-            if (sourceCode == "https://github.com/jbmagination/exolink") sourceCode = `<a href="https://github.com/jbmagination/exolink">source code</a>`
-            else sourceCode = `source code: <a href="https://github.com/jbmagination/exolink">original</a>, <a href="${modifiedLink}">modified</a>`
-        %> 
+            if ((sourceCode == "https://github.com/jbmagination/exolink" || sourceCode == "https://github.com/Ectoracer/Exolink")) sourceCode = `<a href="https://github.com/Ectoracer/Exolink">source code</a>`
+            else sourceCode = `source code: <a href="${modifiedLink}">modified</a> (<a href="/changes.txt">changes</a>), <a href="https://github.com/Ectoracer/Exolink">original</a>`
+        %>
         <h1>Exolink <span style="font-size:45%"><%= version %> | <%- sourceCode %></span></h1>
         <% if (data && data.error) { %><div id="error" style="color:darkred"><%= "Something went wrong: " + data.error %></div><% } %>
         <% 
