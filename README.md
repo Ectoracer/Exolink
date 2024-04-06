@@ -70,7 +70,7 @@ For most people, `SOURCE_CODE` should always be `https://github.com/Ectoracer/Ex
 Then, install the necessary dependencies with `npm ci` or `npm install`. Exolink should be accessible from the project page.
 
 ## License
-The `favicon.ico` and `public/exo_bg.png` files are under the copyright of (and belongs to) Nyan Studio Games, and is admittedly used with forgiveness rather than permission.
+The `public/favicon.ico`, `public/exo_bg.png`, and `public/phone.png` files are under the copyright of (and belongs to) Nyan Studio Games; admittedly used with forgiveness rather than permission.
 
 Every other file is under the GNU Affero General Public License, version 3 of the License:
 
