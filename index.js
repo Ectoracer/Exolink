@@ -361,7 +361,9 @@ if (!((process.env.SOURCE_CODE == "https://github.com/jbmagination/exolink") || 
 }
 
 app.get('*', (req, res) => {
-    res.redirect('/');
+    console.log(`GET ${req.path} | Request received`);
+    if (fs.existsSync(`./links/${req.path}.json`)) res.status(200).render('link', { 'version': version, 'sourceCode': process.env.SOURCE_CODE, 'level': JSON.parse(fs.readFileSync(`./links/${req.path}.json`, 'utf-8')) });
+    else res.redirect('/');
 })
 
 var server = app.listen(process.env.PORT, () => console.log(`Running on port ${server.address().port}`));
