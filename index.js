@@ -1,7 +1,6 @@
 const express = require('express');
 const app = express();
 const axios = require('axios').default;
-const puppeteer = require('puppeteer');
 const ejs = require('ejs');
 const fs = require('fs');
 const { google } = require('googleapis');
@@ -86,28 +85,31 @@ app.post('/getData', (req, res) => {
             // actually doing the thing
             console.log(`POST /getData | Loading preview link for ${domainPrefix}.page.link/${shortLink}`)
             
-            // replit and glitch shenanigans
-            let browser;
-            if (fs.existsSync('.replit') && fs.existsSync('replit.nix')) browser = await puppeteer.launch({ headless: 'new', executablePath: '/nix/store/x205pbkd5xh5g4iv0g58xjla55has3cx-chromium-108.0.5359.94/bin/chromium', args: ['--no-sandbox', '--disable-setuid-sandbox'] });
-            else if (fs.existsSync('.glitchdotcom.json')) browser = await puppeteer.launch({ headless: 'new', executablePath: './node_modules/chromium/lib/chromium/chrome-linux/chrome', args: ['--no-sandbox', '--disable-setuid-sandbox'] });
-            else browser = await puppeteer.launch({ headless: 'new' });
-            const page = await browser.newPage();
-            
-            await page.goto(`https://${domainPrefix}.page.link/${shortLink}${additionalCharacter}d=1`, {
-                waitUntil: 'networkidle0'
-            });
-            
-            var link = await page.evaluate(() => {
-                if (document.getElementsByClassName('cacJ4e')[0] && document.getElementsByClassName('cacJ4e')[0].getElementsByTagName('a')[0]) {
-                    return document.getElementsByClassName('cacJ4e')[0].getElementsByTagName('a')[0].href.baseVal;
-                } else {
-                    return undefined;
-                }
-            });
+            let link;
+            await axios(`https://${domainPrefix}.page.link/${shortLink}${additionalCharacter}d=1`)
+            .then((response) => {
+                let data = response.data;
+                data = data.slice(data.indexOf('AF_initDataCallback({'), data.indexOf('sideChannel: {}') - 2)
+                data = data.slice(data.indexOf('data:') + 5);
+                data = JSON.parse(data);
+                link = data[6];
+                console.log(link);
+            })
+            .catch((error) => {                
+                return;
+            })
 
             if (link && (process.env.DISCORD_WEBHOOK.startsWith('https://discord.com/api/webhooks/'))) axios.post(process.env.DISCORD_WEBHOOK, { content: `New link: https://${domainPrefix}.page.link/${shortLink}`});
 
             if (link && (link.indexOf('exo.page.link') > -1)) link = new URL(link).searchParams.get('link')
+            if (link && (link.indexOf('?link%3DLOBBY') > -1)) { 
+                console.log('POST /getData | Lobby link found, stopping');
+                res.status(400).json({
+                    "status": "ERROR",
+                    "error": "Lobby links are not yet supported"
+                });
+                return
+            }
             if (link && (link.indexOf('deeplinkfallback.php') > -1)) { 
                 console.log('POST /getData | Long dynamic link found'); 
             } else {
@@ -116,11 +118,8 @@ app.post('/getData', (req, res) => {
                     "status": "ERROR",
                     "error": "Long dynamic link couldn't be found - does your short link exist?"
                 });
-                await browser.close();
                 return
             }
-            
-            await browser.close();
 
             let levelID = link.substring(link.indexOf('levelId%3D')).substring(10, 46);
             let title = decodeURIComponent(link).substring(decodeURIComponent(link).indexOf('?title=')).substring(7).split('&')[0].replaceAll('+', ' ')
