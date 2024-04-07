@@ -141,6 +141,6 @@
         <img src="/phone.png" width="720px" />
         <br>
         <br>
-        <p>This is a link to an online <%- level.type %> from the game Exoracer. Download it from <a href="https://play.google.com/store/apps/details?id=com.nyanstudio.exoracer">Google Play</a>, <a href="https://apps.apple.com/app/exoracer/id1618857304">App Store</a>, or <a href="https://store.steampowered.com/app/2845120">Steam</a>.</p>
+        <p>This is a link to an online <%- level.type %> from the game Exoracer. Download it from <a href="<%- level.play || "https://play.google.com/store/apps/details?id=com.nyanstudio.exoracer" %>">Google Play</a>, <a href="https://apps.apple.com/app/exoracer/id1618857304">App Store</a>, or <a href="https://store.steampowered.com/app/2845120">Steam</a>.</p>
     </body>
 </html>
