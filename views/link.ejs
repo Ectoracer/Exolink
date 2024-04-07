@@ -70,6 +70,27 @@
                 font-size: 20px;
                 padding-left: 20px;
             }
+            a.button {
+                appearance: button;
+                text-decoration: none;
+                color: #fff;
+                cursor: pointer;
+                margin: 10px;
+                border-radius: 3px;
+                background-color: #7b4afa;
+                border-style: none;
+                padding: 4px;
+                font-size: 20px;
+            }
+            a.button:after {
+                border-bottom: 0px solid #fff;
+            }
+            a.button:hover {
+                color: #fff;
+            }
+            a.button:hover:after {
+                color: #fff;
+            }
             @media (prefers-color-scheme: dark) {
                 a {
                     color: rgb(0, 128, 255);
@@ -104,11 +125,15 @@
         <div>
             <div class="container">
                 <div class="image">
-                    <img src="<%- level.image %>" />
+                    <img src="<%- level.image %>" width="201px" />
                 </div>
                 <div class="text">
-                    <h3><%- level.title %></h3>
+                    <h3></h3><%- level.title %></h3>
                     <h3><%- level.description %></h3>
+                    <br>
+                    <form action="<%- level.android %>">
+                        <a href="<%- level.android %>" class="button">Open Exoracer</a>
+                    </form>
                 </div>
             </div>
         </div>
