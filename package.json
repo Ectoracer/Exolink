@@ -27,6 +27,6 @@
     "puppeteer": "^19.4.1"
   },
   "engines": {
-    "node": ">=v16.x"
+    "node": ">=v20.x"
   }
 }
