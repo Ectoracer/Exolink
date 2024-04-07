@@ -32,8 +32,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.set('view engine', 'ejs');
 
+app.all('*', (req, res, next) => {
+    console.log(`${req.method} ${req.path} | Request received`);
+    next();
+})
+
 app.post('/getData', (req, res) => {
-    console.log('POST /getData | Request received');
     (async () => {
         try {
             // server-side validation and correction
@@ -99,7 +103,9 @@ app.post('/getData', (req, res) => {
                 return;
             })
 
-            if (link && (process.env.DISCORD_WEBHOOK.startsWith('https://discord.com/api/webhooks/'))) axios.post(process.env.DISCORD_WEBHOOK, { content: `New link: https://${domainPrefix}.page.link/${shortLink}`});
+            if (link && (process.env.DISCORD_WEBHOOK.startsWith('https://discord.com/api/webhooks/')) && (!(fs.existsSync(`./${domainPrefix}/${shortLink}.json`)))) {
+                axios.post(process.env.DISCORD_WEBHOOK, { content: `New link: https://${domainPrefix}.page.link/${shortLink}`});
+            }
 
             if (link && (link.indexOf('exo.page.link') > -1)) link = new URL(link).searchParams.get('link')
             if (link && (link.indexOf('?link%3DLOBBY') > -1)) { 
@@ -152,7 +158,6 @@ app.post('/getData', (req, res) => {
 });
 
 app.post('/makeLink', (req, res) => {
-    console.log('POST /makeLink | Request received');
     (async () => {
         try {
             // server-side validation and correction + variables
@@ -279,7 +284,6 @@ app.post('/makeLink', (req, res) => {
 })
 
 app.get('/nojs', (req, res) => {
-    console.log(`GET /nojs | Request received`)
     if (req.query.link) {
         console.log(`GET /nojs | Making /getData request`)
         try {
@@ -348,20 +352,23 @@ app.get('/nojs', (req, res) => {
 })
 
 app.get('/', (req, res) => {
-    console.log(`GET / | Request received`);
     res.status(200).render('index', { 'version': version, 'sourceCode': process.env.SOURCE_CODE });
 });
 
 if (!((process.env.SOURCE_CODE == "https://github.com/jbmagination/exolink") || (process.env.SOURCE_CODE == "https://github.com/Ectoracer/Exolink"))) {
     app.get('/changes.txt', (req, res) => {
-        console.log(`GET /changes.txt | Request received`);
         res.sendFile('changes.txt', { root: path.join(__dirname) })
     })
 }
 
+app.get('/link/:prefix/:id', (req, res) => {
+    if (fs.existsSync(`./links/${req.params.prefix}/${req.params.id}.json`)) res.status(200).render('link', { 'version': version, 'sourceCode': process.env.SOURCE_CODE, 'level': JSON.parse(fs.readFileSync(`./links/${req.params.prefix}/${req.params.id}.json`, 'utf-8')) });
+    else res.redirect('/');
+});
+
 app.get('*', (req, res) => {
-    console.log(`GET ${req.path} | Request received`);
-    if (fs.existsSync(`./links/${req.path}.json`)) res.status(200).render('link', { 'version': version, 'sourceCode': process.env.SOURCE_CODE, 'level': JSON.parse(fs.readFileSync(`./links/${req.path}.json`, 'utf-8')) });
+    if (fs.existsSync(`./links/exoracer/${req.path.slice(1)}.json`)) res.redirect(`/link/exoracer/${req.path.slice(1)}`);
+    else if (fs.existsSync(`./links/exo/${req.path.slice(1)}.json`)) res.redirect(`/link/exo/${req.path.slice(1)}`);
     else res.redirect('/');
 })
 
