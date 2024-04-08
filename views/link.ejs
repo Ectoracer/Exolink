@@ -14,7 +14,7 @@
             @import url("https://fontlay.com/css2?family=Monoton&family=Oxanium:wght@700&display=swap");
             :root { color-scheme: light dark; }
             * {
-                font-family: "Oxanium", cursive;
+                font-family: "Oxanium";
                 color: #d9d9d9;
                 text-align: center;
                 outline: none;
@@ -31,7 +31,7 @@
                 text-align: center;
             }
             h1 {
-                font-family: "Monoton", cursive;
+                font-family: "Monoton";
                 font-size: 50px;
             }
             h3 { font-size: 20px; }
@@ -124,9 +124,13 @@
         <h1>Exolink <span style="font-size:45%"><%= version %> | <%- sourceCode %></span></h1>
         <div>
             <div class="container">
+                <% 
+                if (level.image) { 
+                %>
                 <div class="image">
                     <img src="<%- level.image %>" width="201px" />
                 </div>
+                <% } %>
                 <div class="text">
                     <h3></h3><%- level.title %></h3>
                     <h3><%- level.description %></h3>
