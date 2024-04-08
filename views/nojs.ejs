@@ -23,11 +23,13 @@
             body {
                 margin: 0 auto;
                 background-image: url(exo_bg.png);
+                background-size: 100%;
                 position: absolute;
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
                 text-align: center;
+                width: 80%;
             }
             h1 {
                 font-family: "Monoton";
@@ -128,7 +130,7 @@
             if ((sourceCode == "https://github.com/jbmagination/exolink" || sourceCode == "https://github.com/Ectoracer/Exolink")) sourceCode = `<a href="https://github.com/Ectoracer/Exolink">source code</a>`
             else sourceCode = `source code: <a href="${modifiedLink}">modified</a> (<a href="/changes.txt">changes</a>), <a href="https://github.com/Ectoracer/Exolink">original</a>`
         %>
-        <h1>Exolink <span style="font-size:45%"><%= version %> | <%- sourceCode %></span></h1>
+        <h1>Exolink <span style="font-size:45%"><%= version %> | <%- sourceCode %> | <a href="/privacy">privacy</a></span></h1>
         <% if (data && data.error) { %><div id="error" style="color:darkred"><%= "Something went wrong: " + data.error %></div><% } %>
         <div><b>All <i>page.link</i> links will stop working on August 25th, 2025.</b> <a href="https://github.com/Ectoracer/Exolink/issues/4">Learn more about what that means for Exolink.</a></div>
         <% 

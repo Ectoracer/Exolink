@@ -33,7 +33,13 @@ app.use(express.urlencoded({ extended: false }));
 app.set('view engine', 'ejs');
 
 app.all('*', (req, res, next) => {
-    console.log(`${req.method} ${req.path} | Request received`);
+    let path = req.path;
+    if (path.endsWith('/') && !(path == '/')) path = path.slice(0, path.length - 1);
+    if (path.startsWith('/image/')) path = `/image/***`;
+    let pathName = path.slice(1);
+    if (!(fs.existsSync(`./views/${pathName}.ejs`)) && (fs.existsSync(`./links/exoracer/${pathName}.json`) || fs.existsSync(`./links/exo/${pathName}.json`))) path = `/***`
+    if (path.startsWith('/link/')) path = `/link/***/***`;
+    console.log(`${req.method} ${path} | Request received`);
     next();
 })
 
@@ -90,7 +96,11 @@ app.post('/getData', (req, res) => {
             console.log(`POST /getData | Loading preview link for ${domainPrefix}.page.link/${shortLink}`)
             
             let link;
-            await axios(`https://${domainPrefix}.page.link/${shortLink}${additionalCharacter}d=1`)
+            await axios(`https://${domainPrefix}.page.link/${shortLink}${additionalCharacter}d=1`, {
+                "headers": {
+                    "User-Agent": "Mozilla/5.0 (compatible; Exolink/1.0; +https://github.com/Ectoracer/Exolink)"
+                }
+            })
             .then((response) => {
                 let data = response.data;
                 data = data.slice(data.indexOf('AF_initDataCallback({'), data.indexOf('sideChannel: {}') - 2)
@@ -181,7 +191,11 @@ app.post('/makeLink', (req, res) => {
             console.log('POST /makeLink | Making request to ExoStats')
             let noLevelID;
             noLevelID = false;
-            await axios(`https://exo.lgms.nl/?api&userlevel=${levelID}`)
+            await axios(`https://exo.lgms.nl/?api&userlevel=${levelID}`, {
+                "headers": {
+                    "User-Agent": "Mozilla/5.0 (compatible; Exolink/1.0; +https://github.com/Ectoracer/Exolink)"
+                }
+            })
             .then((response) => {
                 if (levelVersion.toString() == "NaN") levelVersion = response.data.version
             })
@@ -290,6 +304,10 @@ app.get('/nojs', (req, res) => {
             axios.post(`http://localhost:${server.address().port}/getData`, { 
                 "link": req.query.link,
                 "domainPrefix": req.query.domainPrefix
+            }, {
+                "headers": {
+                    "User-Agent": "Mozilla/5.0 (compatible; Exolink/1.0; +https://github.com/Ectoracer/Exolink)"
+                }
             })
             .then((response) => {
                 let suffixOption = "Unguessable";
@@ -351,8 +369,48 @@ app.get('/nojs', (req, res) => {
     res.status(200).render('nojs', { 'data': null, 'link': null, 'version': version, 'sourceCode': process.env.SOURCE_CODE })
 })
 
+app.get('/privacy', (req, res) => {
+    res.status(200).render('privacy', { 'version': version, 'sourceCode': process.env.SOURCE_CODE });
+});
+
 app.get('/', (req, res) => {
     res.status(200).render('index', { 'version': version, 'sourceCode': process.env.SOURCE_CODE });
+});
+
+app.get('/image/*', (req, res) => {
+    let url;
+    try {
+        url = new URL(req.path.replace('/image/','')).toString()
+    } catch (error) {
+        res.status(404).send('')
+    }
+    axios(url, {
+        headers: {
+            "Accept": "image/png, image/x-png, image/jpeg, image/gif, image/*, */*",
+            "User-Agent": "Mozilla/5.0 (compatible; Exolink/1.0; +https://github.com/Ectoracer/Exolink)"
+        },
+        responseType: 'arraybuffer'
+    })
+    .then((response) => {
+        if (!(response.headers['content-type'] && response.headers['content-type'].startsWith('image/'))) {
+            res.status(404).send('')
+        } else {
+            if (response.status !== 200) res.status(404).send('')
+            else {
+                res.contentType(response.headers['content-type'])
+                res.header('Content-Length', response.data.length)
+                res.status(response.status).send(response.data)
+            }
+        }
+    })
+    .catch((error) => {
+        if (error.response) {
+            res.status(404).send('')
+        } else {
+            console.error(error)
+            res.status(500).send('')
+        }
+    })
 });
 
 if (!((process.env.SOURCE_CODE == "https://github.com/jbmagination/exolink") || (process.env.SOURCE_CODE == "https://github.com/Ectoracer/Exolink"))) {
@@ -362,8 +420,27 @@ if (!((process.env.SOURCE_CODE == "https://github.com/jbmagination/exolink") || 
 }
 
 app.get('/link/:prefix/:id', (req, res) => {
-    if (fs.existsSync(`./links/${req.params.prefix}/${req.params.id}.json`)) res.status(200).render('link', { 'version': version, 'sourceCode': process.env.SOURCE_CODE, 'level': JSON.parse(fs.readFileSync(`./links/${req.params.prefix}/${req.params.id}.json`, 'utf-8')) });
-    else res.redirect('/');
+    if (fs.existsSync(`./links/${req.params.prefix}/${req.params.id}.json`)) {
+        let level = JSON.parse(fs.readFileSync(`./links/${req.params.prefix}/${req.params.id}.json`, 'utf-8'));
+        let imageAvailable = false;
+        if (level.image) {
+            axios(`http://localhost:${server.address().port}/image/${level.image}`)
+            .then((response) => { 
+                if (response.status == 200) {
+                    imageAvailable = true;
+                    res.status(200).render('link', { 'version': version, 'sourceCode': process.env.SOURCE_CODE, 'level': level, 'imageAvailable': imageAvailable });
+                } else res.status(200).render('link', { 'version': version, 'sourceCode': process.env.SOURCE_CODE, 'level': level, 'imageAvailable': imageAvailable });
+            })
+            .catch((error) => {
+                if (error.response) {
+                    res.status(200).render('link', { 'version': version, 'sourceCode': process.env.SOURCE_CODE, 'level': level, 'imageAvailable': imageAvailable });
+                } else {
+                    console.error(error);
+                    res.status(500).send('Something went wrong!')
+                }
+            })
+        } else res.status(200).render('link', { 'version': version, 'sourceCode': process.env.SOURCE_CODE, 'level': level, 'imageAvailable': imageAvailable });
+    } else res.redirect('/');
 });
 
 app.get('*', (req, res) => {

@@ -23,11 +23,13 @@
             body {
                 margin: 0 auto;
                 background-image: url(exo_bg.png);
+                background-size: 100%;
                 position: absolute;
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
                 text-align: center;
+                width: 80%;
             }
             h1 {
                 font-family: "Monoton";
@@ -128,7 +130,7 @@
             if ((sourceCode == "https://github.com/jbmagination/exolink" || sourceCode == "https://github.com/Ectoracer/Exolink")) sourceCode = `<a href="https://github.com/Ectoracer/Exolink">source code</a>`
             else sourceCode = `source code: <a href="${modifiedLink}">modified</a> (<a href="/changes.txt">changes</a>), <a href="https://github.com/Ectoracer/Exolink">original</a>`
         %> 
-        <h1>Exolink <span style="font-size:45%"><%= version %> | <%- sourceCode %></span></h1>
+        <h1>Exolink <span style="font-size:45%"><%= version %> | <%- sourceCode %> | <a href="/privacy">privacy</a></span></h1>
         <div>
             <select id="domainPrefix">
                 <option value="exoracer">exoracer</option>
