@@ -29,10 +29,25 @@ For most people, `SOURCE_CODE` should always be `https://github.com/Ectoracer/Ex
 
 Then, install the necessary dependencies with `npm ci` or `npm install`. You can host Exolink from there with `node index`. You'll be able to access Exolink from the port listed in the console.
 
-### Hosting on Replit
-In your Replit, go to Shell and type `chromium`. Choose `chromium.out`. You only need to do this once.
+### Hosting on Render
+When you set the environment variables for your Web Service, choose to add from your .env. Set it to something like this:
+```
+PORT=3000
+SOURCE_CODE=https://github.com/Ectoracer/Exolink
+LINK_KEY=[XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]
+CUSTOM_LINK=false
+```
 
-Then, go to Secrets and set the raw JSON to something like this:
+`PORT` *must* be `3000`. To the best of my knowledge, Render will not expose Exolink otherwise.
+
+For most people, `SOURCE_CODE` should always be `https://github.com/Ectoracer/Exolink`. Leave it as is unless you've modified the source code (you'll know if you have), in which case you'll need to publish the modified source code and put a link to it in `SOURCE_CODE`.
+
+`CUSTOM_LINK` *must* be false. Only official instances have access to custom links (`exo.page.link`), because it requires access to the Firebase project associated with it.
+
+Render will automatically install the needed dependencies and deploy Exolink. Others can access it from your project's "onrender.com" link.
+
+### Hosting on Replit
+In your Replit, go to Secrets and set the raw JSON to something like this:
 ```json
 {
   "PORT": "3000",
@@ -51,12 +66,10 @@ For most people, `SOURCE_CODE` should always be `https://github.com/Ectoracer/Ex
 You can now press Run. Exolink should appear in Replit's Webview, and others can access it from the Repl's link.
 
 ### Hosting on Glitch
-Assuming you've imported your project from this source code link and didn't remix the `exolink` project, you first need to go to Terminal. Type `export PUPPETEER_SKIP_DOWNLOAD=true` and `export NODE_CHROMIUM_VERSION=1069273`.
-
-Regardless of how you made your project, go to .env, and set it to Plaintext. Replace the contents of the file with something like this:
+Go to .env, and set it to Plaintext. Replace the contents of the file with something like this:
 ```
 PORT=3000
-SOURCE_CODE=https://github.com/jbmagination/exolink
+SOURCE_CODE=https://github.com/Ectoracer/Exolink
 LINK_KEY=[XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]
 CUSTOM_LINK=false
 ```

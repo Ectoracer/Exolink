@@ -13,7 +13,7 @@
             @import url("https://fontlay.com/css2?family=Monoton&family=Oxanium:wght@700&display=swap");
             :root { color-scheme: light dark; }
             * {
-                font-family: "Oxanium", cursive;
+                font-family: "Oxanium";
                 color: #d9d9d9;
                 text-align: center;
                 outline: none;
@@ -22,15 +22,17 @@
             }
             body {
                 margin: 0 auto;
-                background-image: url(exo_bg.png);
+                background-image: url('/exo_bg.png');
+                background-size: 100%;
                 position: absolute;
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
                 text-align: center;
+                width: 80%;
             }
             h1 {
-                font-family: "Monoton", cursive;
+                font-family: "Monoton";
                 font-size: 50px;
             }
             h3 { font-size: 20px; }
@@ -113,7 +115,7 @@
             }
             button {
                 cursor: pointer;
-                margin: 10px;
+                margin: 0px;
                 border-radius: 3px;
                 background-color: #7b4afa;
                 border-style: none;
@@ -128,7 +130,7 @@
             if ((sourceCode == "https://github.com/jbmagination/exolink" || sourceCode == "https://github.com/Ectoracer/Exolink")) sourceCode = `<a href="https://github.com/Ectoracer/Exolink">source code</a>`
             else sourceCode = `source code: <a href="${modifiedLink}">modified</a> (<a href="/changes.txt">changes</a>), <a href="https://github.com/Ectoracer/Exolink">original</a>`
         %> 
-        <h1>Exolink <span style="font-size:45%"><%= version %> | <%- sourceCode %></span></h1>
+        <h1>Exolink <span style="font-size:45%"><%= version %> | <%- sourceCode %> | <a href="/privacy">privacy</a></span></h1>
         <div>
             <select id="domainPrefix">
                 <option value="exoracer">exoracer</option>
@@ -141,7 +143,14 @@
         <br>
         <div>
             <div>
-                <label for="levelID">Level ID:</label>
+                <label for="type">Type:</label>
+                <select id="type" onchange="showLevelVersion()">
+                    <option value="level">Level</option>
+                    <option value="lobby">Lobby</option>
+                </select>
+            </div>
+            <div>
+                <label for="levelID">Level/lobby ID:</label>
                 <input type="text" id="levelID" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
             </div>
             <div>
@@ -155,10 +164,10 @@
             <div>
                 <label for="imageURL">Image URL:</label>
                 <input type="text" id="imageURL" placeholder="Image URL">
-                <button onclick="javascript:makeImageURL()">Adjust image URL</button>
+                <button id="imageURLButton" onclick="javascript:makeImageURL()">Adjust image URL</button>
             </div>
             <div>
-                <label for="levelVersion">Level version:</label>
+                <label id="levelVersionLabel" for="levelVersion">Level version:</label>
                 <input type="number" id="levelVersion" placeholder="Level version">
             </div>
             <div>
@@ -201,6 +210,7 @@
 
             function getData() {
                 document.getElementById('shareLink').setAttribute("readonly", "readonly")
+                document.getElementById('type').setAttribute("readonly", "readonly")
                 document.getElementById('levelID').setAttribute("readonly", "readonly")
                 document.getElementById('title').setAttribute("readonly", "readonly")
                 document.getElementById('description').setAttribute("readonly", "readonly")
@@ -236,13 +246,14 @@
                             if (!(link[0] == '?')) {
                                 alert('Something went wrong: Validation error: Short links must be either 4 or 17 characters')
                                 document.getElementById('shareLink').removeAttribute("readonly")
+                                document.getElementById('type').removeAttribute("readonly")
                                 document.getElementById('levelID').removeAttribute("readonly")
                                 document.getElementById('title').removeAttribute("readonly")
                                 document.getElementById('description').removeAttribute("readonly")
                                 document.getElementById('imageURL').removeAttribute("readonly")
                                 document.getElementById('levelVersion').removeAttribute("readonly")
                                 document.getElementById('suffixOption').removeAttribute("readonly")
-                                document.getElementById('customSuffix').removeAttribute("readonly")
+                                if (document.getElementById('customSuffix')) document.getElementById('customSuffix').removeAttribute("readonly")
                                 return
                             }
                         } else suffixOption = "Custom";
@@ -262,6 +273,8 @@
                 .then((data) => {
                     switch (data.status) {
                         case "SUCCESS":
+                            document.getElementById('type').value = data.type
+                            showLevelVersion()
                             document.getElementById('levelID').value = data.levelID
                             document.getElementById('title').value = data.title
                             document.getElementById('description').value = data.description
@@ -269,6 +282,7 @@
                             document.getElementById('levelVersion').value = data.levelVersion
                             document.getElementById('suffixOption').value = suffixOption
                             document.getElementById('shareLink').removeAttribute("readonly")
+                            document.getElementById('type').removeAttribute("readonly")
                             document.getElementById('levelID').removeAttribute("readonly")
                             document.getElementById('title').removeAttribute("readonly")
                             document.getElementById('description').removeAttribute("readonly")
@@ -281,6 +295,7 @@
                             alert("Something went wrong: " + data.error)
                             console.error("Something went wrong: " + data.error)
                             document.getElementById('shareLink').removeAttribute("readonly")
+                            document.getElementById('type').removeAttribute("readonly")
                             document.getElementById('levelID').removeAttribute("readonly")
                             document.getElementById('title').removeAttribute("readonly")
                             document.getElementById('description').removeAttribute("readonly")
@@ -293,6 +308,7 @@
                             alert('Something went horribly wrong')
                             console.error('Something went horribly wrong')
                             document.getElementById('shareLink').removeAttribute("readonly")
+                            document.getElementById('type').removeAttribute("readonly")
                             document.getElementById('levelID').removeAttribute("readonly")
                             document.getElementById('title').removeAttribute("readonly")
                             document.getElementById('description').removeAttribute("readonly")
@@ -307,6 +323,7 @@
                     alert("Something went wrong: " + error)
                     console.error("Something went wrong: " + error)
                     document.getElementById('shareLink').removeAttribute("readonly")
+                    document.getElementById('type').removeAttribute("readonly")
                     document.getElementById('levelID').removeAttribute("readonly")
                     document.getElementById('title').removeAttribute("readonly")
                     document.getElementById('description').removeAttribute("readonly")
@@ -319,6 +336,7 @@
 
             function makeLink() {
                 document.getElementById('shareLink').setAttribute("readonly", "readonly")
+                document.getElementById('type').setAttribute("readonly", "readonly")
                 document.getElementById('levelID').setAttribute("readonly", "readonly")
                 document.getElementById('title').setAttribute("readonly", "readonly")
                 document.getElementById('description').setAttribute("readonly", "readonly")
@@ -332,6 +350,7 @@
                 if (!(levelIDregex.test(document.getElementById('levelID').value))) {
                     alert('Something went wrong: Validation error: Invalid level ID')
                     document.getElementById('shareLink').removeAttribute("readonly")
+                    document.getElementById('type').removeAttribute("readonly")
                     document.getElementById('levelID').removeAttribute("readonly")
                     document.getElementById('title').removeAttribute("readonly")
                     document.getElementById('description').removeAttribute("readonly")
@@ -345,17 +364,20 @@
                 if (document.getElementById('suffixOption').value == "") document.getElementById('suffixOption').value = "Unguessable"
 
                 // actually make requests
+                let customSuffixValue = '';
+                if (document.getElementById('customSuffix') && document.getElementById('customSuffix').value) customSuffixValue = document.getElementById('customSuffix').value;
                 fetch('/makeLink', { 
                     method: 'POST', 
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
+                        "type": document.getElementById('type').value,
                         "levelID": document.getElementById('levelID').value,
                         "title": document.getElementById('title').value,
                         "description": document.getElementById('description').value,
                         "imageURL": document.getElementById('imageURL').value,
                         "levelVersion": document.getElementById('levelVersion').value,
                         "suffixOption": document.getElementById('suffixOption').value,
-                        "customSuffix": document.getElementById('customSuffix').value
+                        "customSuffix": customSuffixValue
                     })
                 })
                 .then((response) => response.json())
@@ -364,6 +386,7 @@
                         case "SUCCESS":
                             document.getElementById('link').innerHTML = `<p><a href="${data.link}">${data.link}</a></p>`
                             document.getElementById('shareLink').removeAttribute("readonly")
+                            document.getElementById('type').removeAttribute("readonly")
                             document.getElementById('levelID').removeAttribute("readonly")
                             document.getElementById('title').removeAttribute("readonly")
                             document.getElementById('description').removeAttribute("readonly")
@@ -376,6 +399,7 @@
                             alert("Something went wrong: " + data.error)
                             console.error("Something went wrong: " + data.error)
                             document.getElementById('shareLink').removeAttribute("readonly")
+                            document.getElementById('type').removeAttribute("readonly")
                             document.getElementById('levelID').removeAttribute("readonly")
                             document.getElementById('title').removeAttribute("readonly")
                             document.getElementById('description').removeAttribute("readonly")
@@ -388,6 +412,7 @@
                             alert('Something went horribly wrong')
                             console.error('Something went horribly wrong')
                             document.getElementById('shareLink').removeAttribute("readonly")
+                            document.getElementById('type').removeAttribute("readonly")
                             document.getElementById('levelID').removeAttribute("readonly")
                             document.getElementById('title').removeAttribute("readonly")
                             document.getElementById('description').removeAttribute("readonly")
@@ -402,6 +427,7 @@
                     alert("Something went wrong: " + error)
                     console.error("Something went wrong: " + error)
                     document.getElementById('shareLink').removeAttribute("readonly")
+                    document.getElementById('type').removeAttribute("readonly")
                     document.getElementById('levelID').removeAttribute("readonly")
                     document.getElementById('title').removeAttribute("readonly")
                     document.getElementById('description').removeAttribute("readonly")
@@ -421,6 +447,18 @@
                         document.getElementById('customSuffix').hidden = true
                         document.getElementById('customSuffixLabel').hidden = true
                     }
+                }
+            }
+
+            function showLevelVersion() {
+                if (document.getElementById('type').value == "level") {
+                    document.getElementById('levelVersion').hidden = false
+                    document.getElementById('levelVersionLabel').hidden = false
+                    document.getElementById('imageURLButton').hidden = false
+                } else {
+                    document.getElementById('levelVersion').hidden = true
+                    document.getElementById('levelVersionLabel').hidden = true
+                    document.getElementById('imageURLButton').hidden = true
                 }
             }
         </script>

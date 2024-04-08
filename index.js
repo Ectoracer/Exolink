@@ -32,8 +32,18 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.set('view engine', 'ejs');
 
+app.all('*', (req, res, next) => {
+    let path = req.path;
+    if (path.endsWith('/') && !(path == '/')) path = path.slice(0, path.length - 1);
+    if (path.startsWith('/image/')) path = `/image/***`;
+    let pathName = path.slice(1);
+    if (!(fs.existsSync(`./views/${pathName}.ejs`)) && (fs.existsSync(`./links/exoracer/${pathName}.json`) || fs.existsSync(`./links/exo/${pathName}.json`))) path = `/***`
+    if (path.startsWith('/link/')) path = `/link/***/***`;
+    console.log(`${req.method} ${path} | Request received`);
+    next();
+})
+
 app.post('/getData', (req, res) => {
-    console.log('POST /getData | Request received');
     (async () => {
         try {
             // server-side validation and correction
@@ -83,10 +93,15 @@ app.post('/getData', (req, res) => {
             }
 
             // actually doing the thing
-            console.log(`POST /getData | Loading preview link for ${domainPrefix}.page.link/${shortLink}`)
+            console.log(`POST /getData | Loading link`)
             
             let link;
-            await axios(`https://${domainPrefix}.page.link/${shortLink}${additionalCharacter}d=1`)
+            let type = 'level';
+            await axios(`https://${domainPrefix}.page.link/${shortLink}${additionalCharacter}d=1`, {
+                "headers": {
+                    "User-Agent": "Mozilla/5.0 (compatible; Exolink/1.0; +https://github.com/Ectoracer/Exolink)"
+                }
+            })
             .then((response) => {
                 let data = response.data;
                 data = data.slice(data.indexOf('AF_initDataCallback({'), data.indexOf('sideChannel: {}') - 2)
@@ -99,16 +114,14 @@ app.post('/getData', (req, res) => {
                 return;
             })
 
-            if (link && (process.env.DISCORD_WEBHOOK.startsWith('https://discord.com/api/webhooks/'))) axios.post(process.env.DISCORD_WEBHOOK, { content: `New link: https://${domainPrefix}.page.link/${shortLink}`});
+            if (link && process.env.DISCORD_WEBHOOK && (process.env.DISCORD_WEBHOOK.startsWith('https://discord.com/api/webhooks/')) && (!(fs.existsSync(`./${domainPrefix}/${shortLink}.json`)))) {
+                axios.post(process.env.DISCORD_WEBHOOK, { content: `New link: https://${domainPrefix}.page.link/${shortLink}`});
+            }
 
             if (link && (link.indexOf('exo.page.link') > -1)) link = new URL(link).searchParams.get('link')
             if (link && (link.indexOf('?link%3DLOBBY') > -1)) { 
-                console.log('POST /getData | Lobby link found, stopping');
-                res.status(400).json({
-                    "status": "ERROR",
-                    "error": "Lobby links are not yet supported"
-                });
-                return
+                console.log('POST /getData | Lobby link detected');
+                type = 'lobby';
             }
             if (link && (link.indexOf('deeplinkfallback.php') > -1)) { 
                 console.log('POST /getData | Long dynamic link found'); 
@@ -121,11 +134,15 @@ app.post('/getData', (req, res) => {
                 return
             }
 
-            let levelID = link.substring(link.indexOf('levelId%3D')).substring(10, 46);
+            let levelID;
+            let levelVersion;
+            if (type == 'lobby') levelID = link.substring(link.indexOf('lobbyId%3D')).substring(10, 46);
+            else levelID = link.substring(link.indexOf('levelId%3D')).substring(10, 46);
             let title = decodeURIComponent(link).substring(decodeURIComponent(link).indexOf('?title=')).substring(7).split('&')[0].replaceAll('+', ' ')
             let description = decodeURIComponent(link).substring(decodeURIComponent(link).indexOf('&description=')).substring(13).split('&')[0].replaceAll('+', ' ')
             let imageURL = decodeURIComponent(decodeURIComponent(link).substring(decodeURIComponent(link).indexOf('&imageUrl=')).substring(10).split('&')[0])
-            let levelVersion = decodeURIComponent(link).substring(decodeURIComponent(link).indexOf('&levelVersion=')).substring(14).split('&')[0]
+            if (type == 'lobby') levelVersion = 1;
+            else levelVersion = decodeURIComponent(link).substring(decodeURIComponent(link).indexOf('&levelVersion=')).substring(14).split('&')[0]
             
             if (parseInt(levelVersion).toString() == "NaN") levelVersion = 1
 
@@ -136,6 +153,7 @@ app.post('/getData', (req, res) => {
                 "dynamicLink": link,
                 "title": title,
                 "description": description,
+                "type": type,
                 "levelID": levelID,
                 "imageURL": imageURL,
                 "levelVersion": levelVersion,
@@ -152,10 +170,10 @@ app.post('/getData', (req, res) => {
 });
 
 app.post('/makeLink', (req, res) => {
-    console.log('POST /makeLink | Request received');
     (async () => {
         try {
             // server-side validation and correction + variables
+            let type = (req.body.type == 'lobby') ? "lobby" : "level";
             let levelID = req.body.levelID;
             let title = req.body.title;
             let description = req.body.description;
@@ -173,34 +191,43 @@ app.post('/makeLink', (req, res) => {
                 return
             }
 
-            console.log('POST /makeLink | Making request to ExoStats')
-            let noLevelID;
-            noLevelID = false;
-            await axios(`https://exo.lgms.nl/?api&userlevel=${levelID}`)
-            .then((response) => {
-                if (levelVersion.toString() == "NaN") levelVersion = response.data.version
-            })
-            .catch((error) => {
-                if (error.response.data.error == "Level ID not found") noLevelID = true
-                else {
-                    console.log(error)
-                    levelVersion = 1
-                }
-            })
+            if (type == 'level') {
+                console.log('POST /makeLink | Making request to ExoStats')
+                let noLevelID;
+                noLevelID = false;
+                await axios(`https://exostats.nl/?api&userlevel=${levelID}`, {
+                    "headers": {
+                        "User-Agent": "Mozilla/5.0 (compatible; Exolink/1.0; +https://github.com/Ectoracer/Exolink)"
+                    }
+                })
+                .then((response) => {
+                    if (levelVersion.toString() == "NaN") levelVersion = response.data.version
+                })
+                .catch((error) => {
+                    if (error.response.data.error == "Level ID not found") noLevelID = true
+                    else {
+                        console.log(error)
+                        levelVersion = 1
+                    }
+                })
 
-            // i should not have to do it this way
-            // JavaScript is an odd language
-            if (noLevelID) {
-                res.status(400).json({
-                    "status": "ERROR",
-                    "error": "Validation error: Invalid level ID"
-                });
-                return
+                // i should not have to do it this way
+                // JavaScript is an odd language
+                if (noLevelID) {
+                    res.status(400).json({
+                        "status": "ERROR",
+                        "error": "Validation error: Invalid level ID"
+                    });
+                    return
+                }
             }
 
             if (req.body.suffixOption == "SHORT") suffixOption = "SHORT"
             else if ((req.body.suffixOption == "CUSTOM") && GoogleAuth) suffixOption = "CUSTOM"
             else suffixOption = "UNGUESSABLE"
+
+            let levelVersionParam = '';
+            if (type == 'level') levelVersionParam = `%26levelVersion%3d${levelVersion}`;
 
             // actually doing the thing
             console.log('POST /makeLink | Making request to create link')
@@ -213,7 +240,7 @@ app.post('/makeLink', (req, res) => {
                         "name": `${customSuffix} | ${title}`,
                         "dynamicLinkInfo": {
                             "domainUriPrefix": "https://exo.page.link",
-                            "link": `https://exoracer.page.link:443/?ibi=com.nyanstudio.exoracer&link=https%3a%2f%2fexoracer.io%2f%3flink%3dLEVEL%26levelId%3d${levelID}%26levelVersion%3d${levelVersion}&si=${encodeURIComponent(imageURL)}&sd=${encodeURI(description).replace('%20', '+')}&st=${encodeURI(title).replace('%20', '+')}&apn=com.nyanstudio.exoracer&ofl=https%3a%2f%2fexoracer.io%2fdeeplinkfallback.php%3ftitle%3d${encodeURI(title).replace('%20', '%2b')}%26description%3d${encodeURI(description).replace('%20', '%2b')}%26imageUrl%3d${encodeURIComponent(imageURL)}`,
+                            "link": `https://exoracer.page.link:443/?ibi=com.nyanstudio.exoracer&link=https%3a%2f%2fexoracer.io%2f%3flink%3d${type.toUpperCase()}%26${type}Id%3d${levelID}${levelVersionParam}&si=${encodeURIComponent(imageURL)}&sd=${encodeURI(description).replace('%20', '+')}&st=${encodeURI(title).replace('%20', '+')}&apn=com.nyanstudio.exoracer&ofl=https%3a%2f%2fexoracer.io%2fdeeplinkfallback.php%3ftitle%3d${encodeURI(title).replace('%20', '%2b')}%26description%3d${encodeURI(description).replace('%20', '%2b')}%26imageUrl%3d${encodeURIComponent(imageURL)}`,
                             "socialMetaTagInfo": {
                                 "socialTitle": title,
                                 "socialDescription": description,
@@ -230,12 +257,12 @@ app.post('/makeLink', (req, res) => {
                     }
                 })
                 .then((response) => {
-                    console.log(`POST /makeLink | Link created: ${response.data.managedShortLink.link}`)
+                    console.log(`POST /makeLink | Link created`)
                     res.json({
                         "status": "SUCCESS",
                         "link":`${response.data.managedShortLink.link}`
                     })
-                    if (process.env.DISCORD_WEBHOOK.startsWith('https://discord.com/api/webhooks/')) axios.post(process.env.DISCORD_WEBHOOK, { content: `New link: ${response.data.managedShortLink.link}`})
+                    if (process.env.DISCORD_WEBHOOK && process.env.DISCORD_WEBHOOK.startsWith('https://discord.com/api/webhooks/')) axios.post(process.env.DISCORD_WEBHOOK, { content: `New link: ${response.data.managedShortLink.link}`})
                 })
                 .catch((error) => {
                     console.log(error)
@@ -247,18 +274,18 @@ app.post('/makeLink', (req, res) => {
             } else { 
                 console.log('POST /makeLink | Unguessable or short suffix chosen')
                 await axios.post(`https://firebasedynamiclinks.googleapis.com/v1/shortLinks?key=${process.env.LINK_KEY}`, {
-                    "longDynamicLink": `https://exoracer.page.link:443/?ibi=com.nyanstudio.exoracer&link=https%3a%2f%2fexoracer.io%2f%3flink%3dLEVEL%26levelId%3d${levelID}%26levelVersion%3d${levelVersion}&si=${encodeURIComponent(imageURL)}&sd=${encodeURI(description).replace('%20', '+')}&st=${encodeURI(title).replace('%20', '+')}&apn=com.nyanstudio.exoracer&ofl=https%3a%2f%2fexoracer.io%2fdeeplinkfallback.php%3ftitle%3d${encodeURI(title).replace('%20', '%2b')}%26description%3d${encodeURI(description).replace('%20', '%2b')}%26imageUrl%3d${encodeURIComponent(imageURL)}`,
+                    "longDynamicLink": `https://exoracer.page.link:443/?ibi=com.nyanstudio.exoracer&link=https%3a%2f%2fexoracer.io%2f%3flink%3d${type.toUpperCase()}%26${type}Id%3d${levelID}${levelVersionParam}&si=${encodeURIComponent(imageURL)}&sd=${encodeURI(description).replace('%20', '+')}&st=${encodeURI(title).replace('%20', '+')}&apn=com.nyanstudio.exoracer&ofl=https%3a%2f%2fexoracer.io%2fdeeplinkfallback.php%3ftitle%3d${encodeURI(title).replace('%20', '%2b')}%26description%3d${encodeURI(description).replace('%20', '%2b')}%26imageUrl%3d${encodeURIComponent(imageURL)}`,
                     "suffix": {
                         "option": suffixOption
                     }
                 })
                 .then((response) => {
-                    console.log(`POST /makeLink | Link created: ${response.data.shortLink}`)
+                    console.log(`POST /makeLink | Link created`)
                     res.json({
                         "status": "SUCCESS",
                         "link":`${response.data.shortLink}`
                     })
-                    if (process.env.DISCORD_WEBHOOK.startsWith('https://discord.com/api/webhooks/')) axios.post(process.env.DISCORD_WEBHOOK, { content: `New link: ${response.data.shortLink}`})
+                    if (process.env.DISCORD_WEBHOOK && process.env.DISCORD_WEBHOOK.startsWith('https://discord.com/api/webhooks/')) axios.post(process.env.DISCORD_WEBHOOK, { content: `New link: ${response.data.shortLink}`})
                 })
                 .catch((error) => {
                     console.log(error.response.data.error)
@@ -279,13 +306,16 @@ app.post('/makeLink', (req, res) => {
 })
 
 app.get('/nojs', (req, res) => {
-    console.log(`GET /nojs | Request received`)
     if (req.query.link) {
         console.log(`GET /nojs | Making /getData request`)
         try {
             axios.post(`http://localhost:${server.address().port}/getData`, { 
                 "link": req.query.link,
                 "domainPrefix": req.query.domainPrefix
+            }, {
+                "headers": {
+                    "User-Agent": "Mozilla/5.0 (compatible; Exolink/1.0; +https://github.com/Ectoracer/Exolink)"
+                }
             })
             .then((response) => {
                 let suffixOption = "Unguessable";
@@ -347,21 +377,83 @@ app.get('/nojs', (req, res) => {
     res.status(200).render('nojs', { 'data': null, 'link': null, 'version': version, 'sourceCode': process.env.SOURCE_CODE })
 })
 
+app.get('/privacy', (req, res) => {
+    res.status(200).render('privacy', { 'version': version, 'sourceCode': process.env.SOURCE_CODE });
+});
+
 app.get('/', (req, res) => {
-    console.log(`GET / | Request received`);
     res.status(200).render('index', { 'version': version, 'sourceCode': process.env.SOURCE_CODE });
+});
+
+app.get('/image/*', (req, res) => {
+    let url;
+    try {
+        url = new URL(req.path.replace('/image/','')).toString()
+    } catch (error) {
+        res.status(404).send('')
+    }
+    axios(url, {
+        headers: {
+            "Accept": "image/png, image/x-png, image/jpeg, image/gif, image/*, */*",
+            "User-Agent": "Mozilla/5.0 (compatible; Exolink/1.0; +https://github.com/Ectoracer/Exolink)"
+        },
+        responseType: 'arraybuffer'
+    })
+    .then((response) => {
+        if (!(response.headers['content-type'] && response.headers['content-type'].startsWith('image/'))) {
+            res.status(404).send('')
+        } else {
+            if (response.status !== 200) res.status(404).send('')
+            else {
+                res.contentType(response.headers['content-type'])
+                res.header('Content-Length', response.data.length)
+                res.status(response.status).send(response.data)
+            }
+        }
+    })
+    .catch((error) => {
+        if (error.response) {
+            res.status(404).send('')
+        } else {
+            console.error(error)
+            res.status(500).send('')
+        }
+    })
 });
 
 if (!((process.env.SOURCE_CODE == "https://github.com/jbmagination/exolink") || (process.env.SOURCE_CODE == "https://github.com/Ectoracer/Exolink"))) {
     app.get('/changes.txt', (req, res) => {
-        console.log(`GET /changes.txt | Request received`);
         res.sendFile('changes.txt', { root: path.join(__dirname) })
     })
 }
 
+app.get('/link/:prefix/:id', (req, res) => {
+    if (fs.existsSync(`./links/${req.params.prefix}/${req.params.id}.json`)) {
+        let level = JSON.parse(fs.readFileSync(`./links/${req.params.prefix}/${req.params.id}.json`, 'utf-8'));
+        let imageAvailable = false;
+        if (level.image) {
+            axios(`http://localhost:${server.address().port}/image/${level.image}`)
+            .then((response) => { 
+                if (response.status == 200) {
+                    imageAvailable = true;
+                    res.status(200).render('link', { 'version': version, 'sourceCode': process.env.SOURCE_CODE, 'level': level, 'imageAvailable': imageAvailable });
+                } else res.status(200).render('link', { 'version': version, 'sourceCode': process.env.SOURCE_CODE, 'level': level, 'imageAvailable': imageAvailable });
+            })
+            .catch((error) => {
+                if (error.response) {
+                    res.status(200).render('link', { 'version': version, 'sourceCode': process.env.SOURCE_CODE, 'level': level, 'imageAvailable': imageAvailable });
+                } else {
+                    console.error(error);
+                    res.status(500).send('Something went wrong!')
+                }
+            })
+        } else res.status(200).render('link', { 'version': version, 'sourceCode': process.env.SOURCE_CODE, 'level': level, 'imageAvailable': imageAvailable });
+    } else res.redirect('/');
+});
+
 app.get('*', (req, res) => {
-    console.log(`GET ${req.path} | Request received`);
-    if (fs.existsSync(`./links/${req.path}.json`)) res.status(200).render('link', { 'version': version, 'sourceCode': process.env.SOURCE_CODE, 'level': JSON.parse(fs.readFileSync(`./links/${req.path}.json`, 'utf-8')) });
+    if (fs.existsSync(`./links/exoracer/${req.path.slice(1)}.json`)) res.redirect(`/link/exoracer/${req.path.slice(1)}`);
+    else if (fs.existsSync(`./links/exo/${req.path.slice(1)}.json`)) res.redirect(`/link/exo/${req.path.slice(1)}`);
     else res.redirect('/');
 })
 

@@ -4,10 +4,8 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Exolink</title>
-        <meta property="og:title" content="<%- level.title %>" />
-        <meta property="og:description" content="<%- level.description %>" />
-        <meta property="og:image" content="<%- level.image %>" />
-        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Exolink">
+        <meta property="og:description" content="Exolink lets you make Exoracer share links with custom titles, descriptions, and images.">
         <meta name="theme-color" content="#7b4afa">
         <link rel="icon" href="/favicon.ico">
         <style>
@@ -36,6 +34,9 @@
                 font-family: "Monoton";
                 font-size: 50px;
             }
+            li {
+                text-align: left;
+            }
             h3 { font-size: 20px; }
             a {
                 color: rgb(0, 64, 255);
@@ -57,42 +58,6 @@
                 color: rgb(0, 128, 255);
             }
             a:hover { color: rgb(0, 128, 255); }
-            .container {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-            .container img {
-                max-width: 100%;
-                border: 3px solid #000;
-                border-radius: 5px;
-            }
-            .container .image { flex-basis: 40%; }
-            .container .text {
-                font-size: 20px;
-                padding-left: 20px;
-            }
-            a.button {
-                appearance: button;
-                text-decoration: none;
-                color: #fff;
-                cursor: pointer;
-                margin: 10px;
-                border-radius: 3px;
-                background-color: #7b4afa;
-                border-style: none;
-                padding: 4px;
-                font-size: 20px;
-            }
-            a.button:after {
-                border-bottom: 0px solid #fff;
-            }
-            a.button:hover {
-                color: #fff;
-            }
-            a.button:hover:after {
-                color: #fff;
-            }
             @media (prefers-color-scheme: dark) {
                 a {
                     color: rgb(0, 128, 255);
@@ -125,26 +90,22 @@
         %> 
         <h1>Exolink <span style="font-size:45%"><%= version %> | <%- sourceCode %> | <a href="/privacy">privacy</a></span></h1>
         <div>
-            <div class="container">
-                <% if (imageAvailable) { %>
-                <div class="image">
-                    <img src="/image/<%- level.image %>" width="201px" />
-                </div>
-                <% } %>
-                <div class="text">
-                    <h3></h3><%- level.title %></h3>
-                    <h3><%- level.description %></h3>
-                    <br>
-                    <form action="<%- level.android %>">
-                        <a href="<%- level.android %>" class="button">Open Exoracer</a>
-                    </form>
-                </div>
-            </div>
+            <h2>Exolink collects minimal information about you.</h2>
+            <ul>
+                <li>A general overview of requests sent to the server are logged for debugging purposes.</li>
+                <li>Links you make through Exolink, as well as links you get metadata about that haven't been seen before, are logged and sent to a public Discord channel.</li>
+                <li>Image links are filtered from the logs - but the operator may know that an image was loaded.</li>
+                <li>The link you're accessing in the link directory is filtered from the logs - but the operator may know that a link was accessed.</li>
+                <li>That's it.</li>
+                <li>Your IP address, browser, user agent, and/or other personally identifiable information are all <u>NOT</u> logged.</li>
+            </ul>
+            <br>
+            <h2>Some parts of Exolink connect to other services.</h2>
+            <ul>
+                <li><a href="https://fontlay.com">Fontlay</a> is a proxy for <a href="https://fonts.google.com">Google Fonts</a>. Your IP is not shared with Google, and according to Fontlay, nothing is logged. Your browser directly connects to Fontlay, and Fontlay then talks to Google. You are <u>NOT</u> subject to Google's <a href="https://policies.google.com/privacy">Privacy Policy</a> or <a href="https://policies.google.com/terms">Terms of Service</a>. Fontlay does not appear to have a privacy policy or a terms of service.</li>
+                <li><a href="https://firebase.google.com/docs/dynamic-links/">Firebase Dynamic Links</a> are links provided by Google. The Exoracer app generates these links when you share a level. Your browser sends no requests to Google - Exolink makes this request directly from the server to Google, and then gets what it needs and gives it back. <i>You</i> are <u>NOT</u> subject to Google's <a href="https://policies.google.com/privacy">Privacy Policy</a> or <a href="https://policies.google.com/terms">Terms of Service</a>.</li>
+                <li>Exolink may also attempt to fetch images. Your browser does not connect to an external server - it connects to us, and then we get the image for you and return it.</li>
+            </ul>
         </div>
-        <br>
-        <img src="/phone.png" width="720px" />
-        <br>
-        <br>
-        <p>This is a link to an online <%- level.type %> from the game Exoracer. Download it from <a href="<%- level.play || "https://play.google.com/store/apps/details?id=com.nyanstudio.exoracer" %>">Google Play</a>, <a href="https://apps.apple.com/app/exoracer/id1618857304">App Store</a>, or <a href="https://store.steampowered.com/app/2845120">Steam</a>.</p>
     </body>
 </html>
