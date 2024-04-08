@@ -191,7 +191,7 @@ app.post('/makeLink', (req, res) => {
             console.log('POST /makeLink | Making request to ExoStats')
             let noLevelID;
             noLevelID = false;
-            await axios(`https://exo.lgms.nl/?api&userlevel=${levelID}`, {
+            await axios(`https://exostats.nl/?api&userlevel=${levelID}`, {
                 "headers": {
                     "User-Agent": "Mozilla/5.0 (compatible; Exolink/1.0; +https://github.com/Ectoracer/Exolink)"
                 }
