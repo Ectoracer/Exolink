@@ -115,7 +115,7 @@
             }
             button {
                 cursor: pointer;
-                margin: 10px;
+                margin: 0px;
                 border-radius: 3px;
                 background-color: #7b4afa;
                 border-style: none;
@@ -164,7 +164,14 @@
         <br>
         <form>
             <div>
-                <label for="levelID">Level ID:</label>
+                <label for="type">Type:</label>
+                <select id="type" name="type">
+                    <option value="level" <% if(data && (data.type == 'level')) { %> selected <% } %>>Level</option>
+                    <option value="lobby" <% if(data && (data.type == 'lobby')) { %> selected <% } %>>Lobby</option>
+                </select>
+            </div>
+            <div>
+                <label for="levelID">Level/lobby ID:</label>
                 <input type="text" id="levelID" name="levelID" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" <% if(data && data.levelID) { %> value="<%=data.levelID%>" <% } %>>
             </div>
             <div>
