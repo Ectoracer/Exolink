@@ -93,7 +93,7 @@ app.post('/getData', (req, res) => {
             }
 
             // actually doing the thing
-            console.log(`POST /getData | Loading preview link for ${domainPrefix}.page.link/${shortLink}`)
+            console.log(`POST /getData | Loading link`)
             
             let link;
             await axios(`https://${domainPrefix}.page.link/${shortLink}${additionalCharacter}d=1`, {
@@ -249,7 +249,7 @@ app.post('/makeLink', (req, res) => {
                     }
                 })
                 .then((response) => {
-                    console.log(`POST /makeLink | Link created: ${response.data.managedShortLink.link}`)
+                    console.log(`POST /makeLink | Link created`)
                     res.json({
                         "status": "SUCCESS",
                         "link":`${response.data.managedShortLink.link}`
@@ -272,7 +272,7 @@ app.post('/makeLink', (req, res) => {
                     }
                 })
                 .then((response) => {
-                    console.log(`POST /makeLink | Link created: ${response.data.shortLink}`)
+                    console.log(`POST /makeLink | Link created`)
                     res.json({
                         "status": "SUCCESS",
                         "link":`${response.data.shortLink}`
