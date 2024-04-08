@@ -24,7 +24,6 @@
             body {
                 margin: 0 auto;
                 background-image: url('/exo_bg.png');
-                background-size: 100%;
                 position: absolute;
                 top: 50%;
                 left: 50%;
@@ -52,6 +51,11 @@
                 border-bottom: 2px solid rgb(0, 128, 255);
                 transition: 0.4s;
             }
+            .phone {
+                width: 720px;
+                max-width: 80%;
+                height: auto;
+            }
             a:hover:after {
                 width: 100%;
                 color: rgb(0, 128, 255);
@@ -67,7 +71,7 @@
                 border: 3px solid #000;
                 border-radius: 5px;
             }
-            .container .image { flex-basis: 40%; }
+            .container .image { flex-basis: 20%; }
             .container .text {
                 font-size: 20px;
                 padding-left: 20px;
@@ -123,7 +127,6 @@
             if ((sourceCode == "https://github.com/jbmagination/exolink" || sourceCode == "https://github.com/Ectoracer/Exolink")) sourceCode = `<a href="https://github.com/Ectoracer/Exolink">source code</a>`
             else sourceCode = `source code: <a href="${modifiedLink}">modified</a> (<a href="/changes.txt">changes</a>), <a href="https://github.com/Ectoracer/Exolink">original</a>`
         %> 
-        <h1>Exolink <span style="font-size:45%"><%= version %> | <%- sourceCode %> | <a href="/privacy">privacy</a></span></h1>
         <div>
             <div class="container">
                 <% if (imageAvailable) { %>
@@ -142,9 +145,11 @@
             </div>
         </div>
         <br>
-        <img src="/phone.png" width="720px" />
+        <img src="/phone.png" class="phone" />
         <br>
         <br>
         <p>This is a link to an online <%- level.type %> from the game Exoracer. Download it from <a href="<%- level.play || "https://play.google.com/store/apps/details?id=com.nyanstudio.exoracer" %>">Google Play</a>, <a href="https://apps.apple.com/app/exoracer/id1618857304">App Store</a>, or <a href="https://store.steampowered.com/app/2845120">Steam</a>.</p>
+        <br>
+        <p></p><span style="font-size:75%">Exolink <%= version %> | <%- sourceCode %> | <a href="/privacy">privacy</a></span></p>
     </body>
 </html>
