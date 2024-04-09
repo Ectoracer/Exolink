@@ -88,7 +88,7 @@ The `public/favicon.ico`, `public/exo_bg.png`, and `public/phone.png` files are 
 Every other file is under the GNU Affero General Public License, version 3 of the License:
 
     Exolink lets you make Exoracer share links with custom titles, descriptions, and images.
-    Copyright (C) 2022  JBMagination, et al.
+    Copyright (C) 2022, 2023, 2024  JBMagination, et al.
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
