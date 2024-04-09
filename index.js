@@ -461,28 +461,52 @@ if (!((process.env.SOURCE_CODE == "https://github.com/jbmagination/exolink") || 
     })
 }
 
+function linkDirHandler(req, res, level) {
+    let imageAvailable = false;
+    if (level.image) {
+        axios(`http://localhost:${server.address().port}/image/${level.image}`)
+        .then((response) => { 
+            if (response.status == 200) {
+                imageAvailable = true;
+                res.status(200).render('link', { 'version': version, 'sourceCode': process.env.SOURCE_CODE, 'level': level, 'imageAvailable': imageAvailable });
+            } else res.status(200).render('link', { 'version': version, 'sourceCode': process.env.SOURCE_CODE, 'level': level, 'imageAvailable': imageAvailable });
+        })
+        .catch((error) => {
+            if (error.response) {
+                res.status(200).render('link', { 'version': version, 'sourceCode': process.env.SOURCE_CODE, 'level': level, 'imageAvailable': imageAvailable });
+            } else {
+                console.error(error);
+                res.status(500).send('Something went wrong!')
+            }
+        })
+    } else res.status(200).render('link', { 'version': version, 'sourceCode': process.env.SOURCE_CODE, 'level': level, 'imageAvailable': imageAvailable });
+}
 app.get('/link/:prefix/:id', (req, res) => {
+    let level;
     if (fs.existsSync(`./links/${req.params.prefix}/${req.params.id}.json`)) {
-        let level = JSON.parse(fs.readFileSync(`./links/${req.params.prefix}/${req.params.id}.json`, 'utf-8'));
-        let imageAvailable = false;
-        if (level.image) {
-            axios(`http://localhost:${server.address().port}/image/${level.image}`)
-            .then((response) => { 
-                if (response.status == 200) {
-                    imageAvailable = true;
-                    res.status(200).render('link', { 'version': version, 'sourceCode': process.env.SOURCE_CODE, 'level': level, 'imageAvailable': imageAvailable });
-                } else res.status(200).render('link', { 'version': version, 'sourceCode': process.env.SOURCE_CODE, 'level': level, 'imageAvailable': imageAvailable });
-            })
-            .catch((error) => {
-                if (error.response) {
-                    res.status(200).render('link', { 'version': version, 'sourceCode': process.env.SOURCE_CODE, 'level': level, 'imageAvailable': imageAvailable });
-                } else {
-                    console.error(error);
-                    res.status(500).send('Something went wrong!')
-                }
-            })
-        } else res.status(200).render('link', { 'version': version, 'sourceCode': process.env.SOURCE_CODE, 'level': level, 'imageAvailable': imageAvailable });
-    } else res.redirect('/');
+        level = JSON.parse(fs.readFileSync(`./links/${req.params.prefix}/${req.params.id}.json`, 'utf-8'));
+        linkDirHandler(req, res, level);
+    } else {
+        axios(`https://raw.githubusercontent.com/Ectoracer/link-directory/main/${req.params.prefix}/${req.params.id}.json`)
+        .then((response) => { 
+            if (response.status == 200) {
+                level = response.data; 
+                linkDirHandler(req, res, level);
+            }
+            else res.redirect('/');
+        })
+        .catch((error) => {
+            if (error.response) {
+                console.log(error.response)
+                res.redirect('/');
+            }
+            else {
+                console.error(error);
+                res.redirect('/');
+                return
+            }
+        })
+    }
 });
 
 app.get('*', (req, res) => {
