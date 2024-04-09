@@ -41,31 +41,31 @@ function getData() {
     if (link.startsWith('exoracer.page.link/')) link = link.substring(19)
 
     document.getElementById('shareLink').value = link
-    let suffixOption = "Unguessable";
+    let suffixOption = "UNGUESSABLE";
 
-    switch (link.length) {
+    if (domainPrefix == "exo") suffixOption = "CUSTOM"
+    else switch (link.length) {
         case 4:
-            suffixOption = "Short";
-            break;
+            suffixOption = "SHORT";
+        break;
         case 17:
-            break;
+            suffixOption = "UNGUESSABLE";
+        break;
         default:
-            if (domainPrefix == "exoracer") {
-                if (!(link[0] == '?')) {
-                    alert('Something went wrong: Validation error: Short links must be either 4 or 17 characters')
-                    document.getElementById('shareLink').removeAttribute("readonly")
-                    document.getElementById('type').removeAttribute("readonly")
-                    document.getElementById('levelID').removeAttribute("readonly")
-                    document.getElementById('title').removeAttribute("readonly")
-                    document.getElementById('description').removeAttribute("readonly")
-                    document.getElementById('imageURL').removeAttribute("readonly")
-                    document.getElementById('levelVersion').removeAttribute("readonly")
-                    document.getElementById('suffixOption').removeAttribute("readonly")
-                    if (document.getElementById('customSuffix')) document.getElementById('customSuffix').removeAttribute("readonly")
-                    return
-                }
-            } else suffixOption = "Custom";
-            break;
+            if (!(link[0] == '?')) {
+                alert('Something went wrong: Validation error: Short links must be either 4 or 17 characters')
+                document.getElementById('shareLink').removeAttribute("readonly")
+                document.getElementById('type').removeAttribute("readonly")
+                document.getElementById('levelID').removeAttribute("readonly")
+                document.getElementById('title').removeAttribute("readonly")
+                document.getElementById('description').removeAttribute("readonly")
+                document.getElementById('imageURL').removeAttribute("readonly")
+                document.getElementById('levelVersion').removeAttribute("readonly")
+                document.getElementById('suffixOption').removeAttribute("readonly")
+                if (document.getElementById('customSuffix')) document.getElementById('customSuffix').removeAttribute("readonly")
+                return
+            }
+        break;
     }
 
     // actually make requests
@@ -81,6 +81,8 @@ function getData() {
     .then((data) => {
         switch (data.status) {
             case "SUCCESS":
+                let suffixOptionValue = data.suffixOption;
+                if (!(document.getElementById('customSuffix')) && suffixOptionValue == 'CUSTOM') suffixOptionValue = "UNGUESSABLE";
                 document.getElementById('type').value = data.type
                 showLevelVersion()
                 document.getElementById('levelID').value = data.levelID
@@ -88,7 +90,8 @@ function getData() {
                 document.getElementById('description').value = data.description
                 document.getElementById('imageURL').value = data.imageURL
                 document.getElementById('levelVersion').value = data.levelVersion
-                document.getElementById('suffixOption').value = suffixOption
+                document.getElementById('suffixOption').value = suffixOptionValue
+                showSuffixOption()
                 document.getElementById('shareLink').removeAttribute("readonly")
                 document.getElementById('type').removeAttribute("readonly")
                 document.getElementById('levelID').removeAttribute("readonly")
@@ -169,7 +172,7 @@ function makeLink() {
         return
     }
 
-    if (document.getElementById('suffixOption').value == "") document.getElementById('suffixOption').value = "Unguessable"
+    if (document.getElementById('suffixOption').value == "") document.getElementById('suffixOption').value = "UNGUESSABLE"
 
     // actually make requests
     let customSuffixValue = '';

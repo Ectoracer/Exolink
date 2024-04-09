@@ -137,23 +137,22 @@ app.post('/getData', (req, res) => {
                 suffixOption = "LONG";
             } else {
                 additionalCharacter = '?'
-                switch (shortLink.length) {
-                    case 4:
-                        suffixOption = "SHORT";
-                        break;
-                    case 17:
-                        suffixOption = "UNGUESSABLE";
-                        break;
-                    default:
-                        if (domainPrefix == "exoracer") {
+                if (domainPrefix == "exoracer") {
+                    switch (shortLink.length) {
+                        case 4:
+                            suffixOption = "SHORT";
+                            break;
+                        case 17:
+                            suffixOption = "UNGUESSABLE";
+                            break;
+                        default:
                             res.status(400).json({
                                 "status": "ERROR",
                                 "error": "Validation error: Short links must be either 4 or 17 characters"
                             });
-                            return;
-                        }
-                        break;
-                }
+                            break;
+                    }
+                } else suffixOption = "CUSTOM";
             }
 
             // actually doing the thing
