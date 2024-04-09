@@ -78,6 +78,35 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.set('view engine', 'ejs');
 
+function isNewLink(link) {
+    let domainPrefix = link.slice(link.indexOf('://') + 3)
+    domainPrefix = domainPrefix.slice(0, domainPrefix.indexOf('.'))
+
+    let linkId = link.slice(link.indexOf('.') + 1)
+    linkId = linkId.slice(linkId.indexOf('/') + 1)
+
+    if (!(fs.existsSync(`./links/${domainPrefix}/${linkId}.json`))) {
+        axios(`https://raw.githubusercontent.com/Ectoracer/link-directory/main/${domainPrefix}/${linkId}.json`)
+        .then((response) => { 
+            if (!(response.status == 200)) {
+                if (process.env.DISCORD_WEBHOOK && (process.env.DISCORD_WEBHOOK.startsWith('https://discord.com/api/webhooks/'))) {
+                    axios.post(process.env.DISCORD_WEBHOOK, { content: `New link: ${link}`})
+                }
+                return true;
+            } else return false;
+        })
+        .catch((error) => {
+            if (error.response) {
+                console.log(error.response)
+                return false;
+            } else {
+                console.error(error);
+                return false;
+            }
+        })
+    }
+}
+
 app.post('/getData', (req, res) => {
     (async () => {
         try {
@@ -139,33 +168,31 @@ app.post('/getData', (req, res) => {
             })
             .then((response) => {
                 let data = response.data;
+                isNewLink(`https://${domainPrefix}.page.link/${shortLink}`);
                 data = data.slice(data.indexOf('AF_initDataCallback({'), data.indexOf('sideChannel: {}') - 2)
                 data = data.slice(data.indexOf('data:') + 5);
                 data = JSON.parse(data);
                 link = data[6];
             })
             .catch((error) => {                
-                return;
+                return
             })
 
-            if (link && process.env.DISCORD_WEBHOOK && (process.env.DISCORD_WEBHOOK.startsWith('https://discord.com/api/webhooks/')) && (!(fs.existsSync(`./links/${domainPrefix}/${shortLink}.json`)))) {
-                axios.post(process.env.DISCORD_WEBHOOK, { content: `New link: https://${domainPrefix}.page.link/${shortLink}`});
-            }
-
-            if (link && (link.indexOf('exo.page.link') > -1)) link = new URL(link).searchParams.get('link')
-            if (link && (link.indexOf('?link%3DLOBBY') > -1)) { 
-                console.log(`ID ${req.id} (${req.method} ${req.processedPath}) | Lobby link detected`);
-                type = 'lobby';
-            }
             if (link && (link.indexOf('deeplinkfallback.php') > -1)) { 
                 console.log(`ID ${req.id} (${req.method} ${req.processedPath}) | Long dynamic link found`); 
             } else {
                 console.log(`ID ${req.id} (${req.method} ${req.processedPath}) | Long dynamic link not found`);
                 res.status(400).json({
                     "status": "ERROR",
-                    "error": "Long dynamic link couldn't be found - does your short link exist?"
+                    "error": "Long dynamic link couldn't be found - does your link exist?"
                 });
                 return
+            }
+
+            if (link && (link.indexOf('exo.page.link') > -1)) link = new URL(link).searchParams.get('link')
+            if (link && (link.indexOf('?link%3DLOBBY') > -1)) { 
+                console.log(`ID ${req.id} (${req.method} ${req.processedPath}) | Lobby link detected`);
+                type = 'lobby';
             }
 
             let levelID;
@@ -177,7 +204,7 @@ app.post('/getData', (req, res) => {
             let imageURL = decodeURIComponent(decodeURIComponent(link).substring(decodeURIComponent(link).indexOf('&imageUrl=')).substring(10).split('&')[0])
             if (type == 'lobby') levelVersion = 1;
             else levelVersion = decodeURIComponent(link).substring(decodeURIComponent(link).indexOf('&levelVersion=')).substring(14).split('&')[0]
-            
+
             if (parseInt(levelVersion).toString() == "NaN") levelVersion = 1
 
             res.json({
@@ -296,7 +323,7 @@ app.post('/makeLink', (req, res) => {
                         "status": "SUCCESS",
                         "link":`${response.data.managedShortLink.link}`
                     })
-                    if (process.env.DISCORD_WEBHOOK && process.env.DISCORD_WEBHOOK.startsWith('https://discord.com/api/webhooks/')) axios.post(process.env.DISCORD_WEBHOOK, { content: `New link: ${response.data.managedShortLink.link}`})
+                    isNewLink(response.data.managedShortLink.link)
                 })
                 .catch((error) => {
                     console.log(error)
@@ -319,7 +346,7 @@ app.post('/makeLink', (req, res) => {
                         "status": "SUCCESS",
                         "link":`${response.data.shortLink}`
                     })
-                    if (process.env.DISCORD_WEBHOOK && process.env.DISCORD_WEBHOOK.startsWith('https://discord.com/api/webhooks/')) axios.post(process.env.DISCORD_WEBHOOK, { content: `New link: ${response.data.shortLink}`})
+                    isNewLink(response.data.shortLink)
                 })
                 .catch((error) => {
                     console.log(error.response.data.error)
