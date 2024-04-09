@@ -29,8 +29,6 @@ if (process.env.CUSTOM_LINK == "true") {
 }
 
 app.all('*', (req, res, next) => {
-    req.id = crypto.randomBytes(8).toString("hex").toUpperCase();
-
     res.append('Referrer-Policy', 'no-referrer');
     res.append('X-Frame-Options', 'DENY');
     res.append('X-Content-Type-Options', 'nosniff');
@@ -62,14 +60,6 @@ app.all('*', (req, res, next) => {
     res.append('Expect-CT', 'max-age=0');
     res.removeHeader('X-Powered-By');
 
-    let path = req.path;
-    if (path.endsWith('/') && !(path == '/')) path = path.slice(0, path.length - 1);
-    if (path.startsWith('/image/')) path = `/image/***`;
-    let pathName = path.slice(1);
-    if (!(fs.existsSync(`./views/${pathName}.ejs`)) && (fs.existsSync(`./links/exoracer/${pathName}.json`) || fs.existsSync(`./links/exo/${pathName}.json`))) path = `/***`
-    if (path.startsWith('/link/')) path = `/link/***/***`;
-    req.processedPath = path;
-    console.log(`ID ${req.id} (${req.method} ${req.processedPath}) | Request received`);
     next();
 })
 
@@ -77,6 +67,58 @@ app.use(express.static('public'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.set('view engine', 'ejs');
+
+app.all('*', (req, res, next) => {
+    req.id = crypto.randomBytes(8).toString("hex").toUpperCase();
+
+    let path = req.path;
+    if (path.endsWith('/') && !(path == '/')) {
+        path = path.slice(0, path.length - 1);
+        req.processedPath = path;
+        console.log(`ID ${req.id} (${req.method} ${req.processedPath}) | Request received`);
+    }
+    else if (path.startsWith('/image/')) {
+        path = `/image/***`;
+        req.processedPath = path;
+        console.log(`ID ${req.id} (${req.method} ${req.processedPath}) | Request received`);
+    }
+    else if (path.startsWith('/link/')) {
+        path = `/link/***/***`;
+        req.processedPath = path;
+        console.log(`ID ${req.id} (${req.method} ${req.processedPath}) | Request received`);
+    }
+    else {
+        let pathName = path.slice(1);
+        if (!(fs.existsSync(`./views/${pathName}.ejs`)) && !(pathName.includes('/')) && !(path == '/')) {
+            if (fs.existsSync(`./links/exoracer/${pathName}.json`) || fs.existsSync(`./links/exo/${pathName}.json`)) path = `/***`;
+            else {
+                axios(`https://raw.githubusercontent.com/Ectoracer/link-directory/main/exoracer/${req.path.slice(1)}.json`)
+                .then((response) => { 
+                    if (response.status == 200) {
+                        path = `/***`;
+                        req.processedPath = path;
+                        console.log(`ID ${req.id} (${req.method} ${req.processedPath}) | Request received`);
+                    } else {
+                        axios(`https://raw.githubusercontent.com/Ectoracer/link-directory/main/exo/${req.path.slice(1)}.json`)
+                        .then((response) => { 
+                            if (response.status == 200) {
+                                path = `/***`;
+                                req.processedPath = path;
+                                console.log(`ID ${req.id} (${req.method} ${req.processedPath}) | Request received`);
+                            }
+                        })
+                        .catch((error) => { if (!(error.response)) console.error(error); }) 
+                    }
+                })
+                .catch((error) => { if (!(error.response)) console.error(error); })
+            }
+        } else {
+            req.processedPath = path;
+            console.log(`ID ${req.id} (${req.method} ${req.processedPath}) | Request received`);
+        }
+    }
+    next();
+})
 
 function isNewLink(link) {
     let domainPrefix = link.slice(link.indexOf('://') + 3)
@@ -96,13 +138,9 @@ function isNewLink(link) {
             } else return false;
         })
         .catch((error) => {
-            if (error.response) {
-                console.log(error.response)
-                return false;
-            } else {
-                console.error(error);
-                return false;
-            }
+            if (error.response) console.error(error.response);
+            else console.error(error);
+            return false;
         })
     }
 }
@@ -173,9 +211,7 @@ app.post('/getData', (req, res) => {
                 data = JSON.parse(data);
                 link = data[6];
             })
-            .catch((error) => {                
-                return
-            })
+            .catch((error) => { return })
 
             if (link && (link.indexOf('deeplinkfallback.php') > -1)) { 
                 console.log(`ID ${req.id} (${req.method} ${req.processedPath}) | Long dynamic link found`); 
@@ -407,7 +443,6 @@ app.get('/nojs', (req, res) => {
     if (req.query.suffixOption) {
         console.log(`ID ${req.id} (${req.method} ${req.processedPath}) | Making /makeLink request`)
         try {
-            console.log(req.query)
             axios.post(`http://localhost:${server.address().port}/makeLink`, {
                 "levelID": req.query.levelID,
                 "title": req.query.title,
@@ -472,9 +507,8 @@ app.get('/image/*', (req, res) => {
         }
     })
     .catch((error) => {
-        if (error.response) {
-            res.status(404).send('')
-        } else {
+        if (error.response) res.status(404).send('')
+        else {
             console.error(error)
             res.status(500).send('')
         }
@@ -522,10 +556,7 @@ app.get('/link/:prefix/:id', (req, res) => {
             else res.redirect('/');
         })
         .catch((error) => {
-            if (error.response) {
-                console.log(error.response)
-                res.redirect('/');
-            }
+            if (error.response) res.redirect('/');
             else {
                 console.error(error);
                 res.redirect('/');
@@ -538,7 +569,34 @@ app.get('/link/:prefix/:id', (req, res) => {
 app.get('*', (req, res) => {
     if (fs.existsSync(`./links/exoracer/${req.path.slice(1)}.json`)) res.redirect(`/link/exoracer/${req.path.slice(1)}`);
     else if (fs.existsSync(`./links/exo/${req.path.slice(1)}.json`)) res.redirect(`/link/exo/${req.path.slice(1)}`);
-    else res.redirect('/');
+    else {
+        axios(`https://raw.githubusercontent.com/Ectoracer/link-directory/main/exoracer/${req.path.slice(1)}.json`)
+        .then((response) => { 
+            if (response.status == 200) res.redirect(`/link/exoracer/${req.path.slice(1)}`); 
+            else {
+                axios(`https://raw.githubusercontent.com/Ectoracer/link-directory/main/exo/${req.path.slice(1)}.json`)
+                .then((response) => { 
+                    if (response.status == 200) res.redirect(`/link/exo/${req.path.slice(1)}`); 
+                    else res.redirect('/')
+                })
+                .catch((error) => {
+                    if (error.response) res.redirect('/');
+                    else {
+                        console.error(error)
+                        res.redirect('/');
+                    } 
+                })
+            }
+        })
+        .catch((error) => {
+            if (error.response) {
+                res.redirect('/');
+            } else {
+                console.error(error)
+                res.redirect('/');
+            }
+        })
+    }
 })
 
 var server = app.listen(process.env.PORT, () => console.log(`Running on port ${server.address().port}`));

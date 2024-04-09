@@ -23,14 +23,14 @@
             <div class="container">
                 <% if (imageAvailable) { %>
                 <div class="image">
-                    <img src="/image/<%- level.image %>" width="201px" />
+                    <img src="/image/<%= level.image %>" width="201px" />
                 </div>
                 <% } %>
                 <div class="text">
-                    <h3><u><%- level.title %></u></h3>
+                    <h3><u><%= level.title %></u></h3>
                     <h3><%- level.description %></h3>
                     <br>
-                    <a href="<%- level.android %>" class="button">Open Exoracer</a>
+                    <a href="<%= level.android %>" class="button">Open Exoracer</a>
                 </div>
             </div>
         </div>
@@ -38,7 +38,7 @@
         <img src="/phone.png" class="phone" />
         <br>
         <br>
-        <p>This is a link to an online <%- level.type %> from the game Exoracer. Download it from <a href="<%- level.play || "https://play.google.com/store/apps/details?id=com.nyanstudio.exoracer" %>">Google Play</a>, <a href="https://apps.apple.com/app/exoracer/id1618857304">App Store</a>, or <a href="https://store.steampowered.com/app/2845120">Steam</a>.</p>
+        <p>This is a link to an online <%= level.type %> from the game Exoracer. Download it from <a href="<%= level.play || "https://play.google.com/store/apps/details?id=com.nyanstudio.exoracer" %>">Google Play</a>, <a href="https://apps.apple.com/app/exoracer/id1618857304">App Store</a>, or <a href="https://store.steampowered.com/app/2845120">Steam</a>.</p>
         <br>
         <p></p><span class="info">Exolink <%= version %> | <%- sourceCode %> | <a href="/privacy">privacy</a></span></p>
     </body>
