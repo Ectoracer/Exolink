@@ -9,120 +9,8 @@
         <meta property="og:description" content="Exolink lets you make Exoracer share links with custom titles, descriptions, and images.">
         <meta name="theme-color" content="#7b4afa">
         <link rel="icon" href="/favicon.ico">
-        <style>
-            @import url("https://fontlay.com/css2?family=Monoton&family=Oxanium:wght@700&display=swap");
-            :root { color-scheme: light dark; }
-            * {
-                font-family: "Oxanium";
-                color: #d9d9d9;
-                text-align: center;
-                outline: none;
-                margin: 0;
-                padding: 0;
-            }
-            body {
-                margin: 0 auto;
-                background-image: url('/exo_bg.png');
-                background-size: 100%;
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                text-align: center;
-                width: 80%;
-            }
-            h1 {
-                font-family: "Monoton";
-                font-size: 50px;
-            }
-            h3 { font-size: 20px; }
-            a {
-                color: rgb(0, 64, 255);
-                text-decoration: none;
-                position: relative;
-                transition: color 0.25s;
-            }
-            a:after {
-                content: '';
-                position: absolute;
-                bottom: 0;
-                left: 0;
-                width: 0%;
-                border-bottom: 2px solid rgb(0, 128, 255);
-                transition: 0.4s;
-            }
-            a:hover:after {
-                width: 100%;
-                color: rgb(0, 128, 255);
-            }
-            a:hover { color: rgb(0, 128, 255); }
-            @media (prefers-color-scheme: dark) {
-                a {
-                    color: rgb(0, 128, 255);
-                    text-decoration: none;
-                    position: relative;
-                    transition: color 0.25s;
-                }
-                a:after {
-                    content: '';
-                    position: absolute;
-                    bottom: 0;
-                    left: 0;
-                    width: 0%;
-                    border-bottom: 2px solid rgb(78, 166, 255);
-                    transition: 0.4s;
-                }
-                a:hover:after {
-                    width: 100%;
-                    color: rgb(78, 166, 255);
-                }
-                a:hover { color: rgb(78, 166, 255); }
-            }
-            input[type="text"], input[type="number"] {
-                font-size: 20px;
-                text-align: left;
-                border-color: #5a3ab3;
-                background-color: #3a2574;
-                border-style: solid;
-                border-width: 3px;
-                border-radius: 2.5px;
-                margin: 2px;
-                width: 300px;
-            }
-            label {
-                font-size: 20px;
-            }
-            input[type="text"]::placeholder,input[type="number"]::placeholder  {
-                font-style: italic;
-            }
-            select {
-                cursor: pointer;
-                text-align: left;
-                border-radius: 3px;
-                background-color: #7b4afa;
-                border-style: none;
-                padding: 3px;
-                font-size: 20px;
-            }
-            input[type="submit"] {
-                cursor: pointer;
-                margin: 10px;
-                border-radius: 3px;
-                background-color: #7b4afa;
-                border-style: none;
-                padding: 4px;
-                font-size: 20px;
-            }
-            button {
-                cursor: pointer;
-                margin: 0px;
-                border-radius: 3px;
-                background-color: #7b4afa;
-                border-style: none;
-                padding: 4px;
-                font-size: 20px;
-            }
-        </style>
+        <link rel="stylesheet" href="/css/common.css"> 
+        <link rel="stylesheet" href="/css/main.css"> 
     </head>
     <body>
         <% 
@@ -130,9 +18,8 @@
             if ((sourceCode == "https://github.com/jbmagination/exolink" || sourceCode == "https://github.com/Ectoracer/Exolink")) sourceCode = `<a href="https://github.com/Ectoracer/Exolink">source code</a>`
             else sourceCode = `source code: <a href="${modifiedLink}">modified</a> (<a href="/changes.txt">changes</a>), <a href="https://github.com/Ectoracer/Exolink">original</a>`
         %>
-        <h1>Exolink <span style="font-size:45%"><%= version %> | <%- sourceCode %> | <a href="/privacy">privacy</a></span></h1>
+        <h1>Exolink <span class="info"><%= version %> | <%- sourceCode %> | <a href="/privacy">privacy</a></span></h1>
         <% if (data && data.error) { %><div id="error" style="color:darkred"><%= "Something went wrong: " + data.error %></div><% } %>
-        <div><b>All <i>page.link</i> links will stop working on August 25th, 2025.</b> <a href="https://github.com/Ectoracer/Exolink/issues/4">Learn more about what that means for Exolink.</a></div>
         <% 
             let suffixOption;
 

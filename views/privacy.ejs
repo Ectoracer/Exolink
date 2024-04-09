@@ -8,79 +8,8 @@
         <meta property="og:description" content="Exolink lets you make Exoracer share links with custom titles, descriptions, and images.">
         <meta name="theme-color" content="#7b4afa">
         <link rel="icon" href="/favicon.ico">
-        <style>
-            @import url("https://fontlay.com/css2?family=Monoton&family=Oxanium:wght@700&display=swap");
-            :root { color-scheme: light dark; }
-            * {
-                font-family: "Oxanium";
-                color: #d9d9d9;
-                text-align: center;
-                outline: none;
-                margin: 0;
-                padding: 0;
-            }
-            body {
-                margin: 0 auto;
-                background-image: url('/exo_bg.png');
-                background-size: 100%;
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                text-align: center;
-                width: 80%;
-            }
-            h1 {
-                font-family: "Monoton";
-                font-size: 50px;
-            }
-            li {
-                text-align: left;
-            }
-            h3 { font-size: 20px; }
-            a {
-                color: rgb(0, 64, 255);
-                text-decoration: none;
-                position: relative;
-                transition: color 0.25s;
-            }
-            a:after {
-                content: '';
-                position: absolute;
-                bottom: 0;
-                left: 0;
-                width: 0%;
-                border-bottom: 2px solid rgb(0, 128, 255);
-                transition: 0.4s;
-            }
-            a:hover:after {
-                width: 100%;
-                color: rgb(0, 128, 255);
-            }
-            a:hover { color: rgb(0, 128, 255); }
-            @media (prefers-color-scheme: dark) {
-                a {
-                    color: rgb(0, 128, 255);
-                    text-decoration: none;
-                    position: relative;
-                    transition: color 0.25s;
-                }
-                a:after {
-                    content: '';
-                    position: absolute;
-                    bottom: 0;
-                    left: 0;
-                    width: 0%;
-                    border-bottom: 2px solid rgb(78, 166, 255);
-                    transition: 0.4s;
-                }
-                a:hover:after {
-                    width: 100%;
-                    color: rgb(78, 166, 255);
-                }
-                a:hover { color: rgb(78, 166, 255); }
-            }
-        </style>
+        <link rel="stylesheet" href="/css/common.css"> 
+        <link rel="stylesheet" href="/css/privacy.css"> 
     </head>
     <body>
         <% 
@@ -88,11 +17,11 @@
             if ((sourceCode == "https://github.com/jbmagination/exolink" || sourceCode == "https://github.com/Ectoracer/Exolink")) sourceCode = `<a href="https://github.com/Ectoracer/Exolink">source code</a>`
             else sourceCode = `source code: <a href="${modifiedLink}">modified</a> (<a href="/changes.txt">changes</a>), <a href="https://github.com/Ectoracer/Exolink">original</a>`
         %> 
-        <h1>Exolink <span style="font-size:45%"><%= version %> | <%- sourceCode %> | <a href="/privacy">privacy</a></span></h1>
+        <h1>Exolink <span class="info"><%= version %> | <%- sourceCode %> | <a href="/privacy">privacy</a></span></h1>
         <div>
             <h2>Exolink collects minimal information about you.</h2>
             <ul>
-                <li>A general overview of requests sent to the server are logged for debugging purposes.</li>
+                <li>A general overview of requests sent to the server are logged for debugging purposes. Each request has a unique ID.</li>
                 <li>Links you make through Exolink, as well as links you get metadata about that haven't been seen before, are logged and sent to a public Discord channel.</li>
                 <li>Image links are filtered from the logs - but the operator may know that an image was loaded.</li>
                 <li>The link you're accessing in the link directory is filtered from the logs - but the operator may know that a link was accessed.</li>

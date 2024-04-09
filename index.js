@@ -7,6 +7,7 @@ const { google } = require('googleapis');
 var path = require('path');
 const { version } = require('./package.json');
 require('dotenv').config();
+const crypto = require("crypto");
 
 let GoogleAuth;
 if (process.env.CUSTOM_LINK == "true") {
@@ -15,7 +16,7 @@ if (process.env.CUSTOM_LINK == "true") {
             "type": "service_account",
             "project_id": process.env.PROJECT_ID,
             "private_key_id": process.env.PRIVATE_KEY_ID,
-            "private_key": process.env.PRIVATE_KEY.replace(/\\n/g, '\n'),
+            "private_key": process.env.PRIVATE_KEY.replace(/\\\\n/g, '\n'),
             "client_email": process.env.CLIENT_EMAIL,
             "client_id": process.env.CLIENT_ID,
             "auth_uri": "https://accounts.google.com/o/oauth2/auth",
@@ -27,21 +28,55 @@ if (process.env.CUSTOM_LINK == "true") {
     })
 }
 
-app.use(express.static('public'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.set('view engine', 'ejs');
-
 app.all('*', (req, res, next) => {
+    req.id = crypto.randomBytes(8).toString("hex").toUpperCase();
+
+    res.append('Referrer-Policy', 'no-referrer');
+    res.append('X-Frame-Options', 'DENY');
+    res.append('X-Content-Type-Options', 'nosniff');
+    res.append('Feature-Policy', 'accelerometer \'none\'; camera \'none\'; geolocation \'none\'; gyroscope \'none\'; magnetometer \'none\'; microphone \'none\'; payment \'none\'; usb \'none\'');
+    res.append('Permissions-Policy', 'accelerometer=(),camera=(),geolocation=(),gyroscope=(),magnetometer=(),microphone=(),payment=(),usb=(),interest-cohort=(),browsing-topics=()');
+    let cspArray = [
+        "default-src 'none'",
+        "script-src 'none'",
+        "connect-src 'none'",
+        "media-src 'none'",
+        "font-src 'self' fontlay.com",
+        "img-src 'self'",
+        "style-src 'self' fontlay.com",
+        "object-src 'none'",
+        "worker-src 'none'",
+        "child-src 'none'",
+        "manifest-src 'self'",
+        "frame-src 'none'",
+        "form-action 'none'",
+        "frame-ancestors 'none'",
+        "base-uri 'self'",
+        'block-all-mixed-content',
+        '',
+    ]
+    if (req.path == '/') cspArray[cspArray.indexOf("script-src 'none'")] = "script-src 'self'"
+    else if (req.path == '/nojs') cspArray[cspArray.indexOf("form-action 'none'")] = "form-action 'self'"
+    else res.append('Content-Security-Policy', cspArray.join(';'));
+    res.append('X-XSS-Protection', '1; mode=block');
+    res.append('Expect-CT', 'max-age=0');
+    res.removeHeader('X-Powered-By');
+
     let path = req.path;
     if (path.endsWith('/') && !(path == '/')) path = path.slice(0, path.length - 1);
     if (path.startsWith('/image/')) path = `/image/***`;
     let pathName = path.slice(1);
     if (!(fs.existsSync(`./views/${pathName}.ejs`)) && (fs.existsSync(`./links/exoracer/${pathName}.json`) || fs.existsSync(`./links/exo/${pathName}.json`))) path = `/***`
     if (path.startsWith('/link/')) path = `/link/***/***`;
-    console.log(`${req.method} ${path} | Request received`);
+    req.processedPath = path;
+    console.log(`ID ${req.id} (${req.method} ${req.processedPath}) | Request received`);
     next();
 })
+
+app.use(express.static('public'));
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.set('view engine', 'ejs');
 
 app.post('/getData', (req, res) => {
     (async () => {
@@ -93,7 +128,7 @@ app.post('/getData', (req, res) => {
             }
 
             // actually doing the thing
-            console.log(`POST /getData | Loading link`)
+            console.log(`ID ${req.id} (${req.method} ${req.processedPath}) | Loading link`)
             
             let link;
             let type = 'level';
@@ -108,25 +143,24 @@ app.post('/getData', (req, res) => {
                 data = data.slice(data.indexOf('data:') + 5);
                 data = JSON.parse(data);
                 link = data[6];
-                console.log(link);
             })
             .catch((error) => {                
                 return;
             })
 
-            if (link && process.env.DISCORD_WEBHOOK && (process.env.DISCORD_WEBHOOK.startsWith('https://discord.com/api/webhooks/')) && (!(fs.existsSync(`./${domainPrefix}/${shortLink}.json`)))) {
+            if (link && process.env.DISCORD_WEBHOOK && (process.env.DISCORD_WEBHOOK.startsWith('https://discord.com/api/webhooks/')) && (!(fs.existsSync(`./links/${domainPrefix}/${shortLink}.json`)))) {
                 axios.post(process.env.DISCORD_WEBHOOK, { content: `New link: https://${domainPrefix}.page.link/${shortLink}`});
             }
 
             if (link && (link.indexOf('exo.page.link') > -1)) link = new URL(link).searchParams.get('link')
             if (link && (link.indexOf('?link%3DLOBBY') > -1)) { 
-                console.log('POST /getData | Lobby link detected');
+                console.log(`ID ${req.id} (${req.method} ${req.processedPath}) | Lobby link detected`);
                 type = 'lobby';
             }
             if (link && (link.indexOf('deeplinkfallback.php') > -1)) { 
-                console.log('POST /getData | Long dynamic link found'); 
+                console.log(`ID ${req.id} (${req.method} ${req.processedPath}) | Long dynamic link found`); 
             } else {
-                console.log('POST /getData | Long dynamic link not found');
+                console.log(`ID ${req.id} (${req.method} ${req.processedPath}) | Long dynamic link not found`);
                 res.status(400).json({
                     "status": "ERROR",
                     "error": "Long dynamic link couldn't be found - does your short link exist?"
@@ -192,7 +226,7 @@ app.post('/makeLink', (req, res) => {
             }
 
             if (type == 'level') {
-                console.log('POST /makeLink | Making request to ExoStats')
+                console.log(`ID ${req.id} (${req.method} ${req.processedPath}) | Making request to ExoStats`)
                 let noLevelID;
                 noLevelID = false;
                 await axios(`https://exostats.nl/?api&userlevel=${levelID}`, {
@@ -230,9 +264,9 @@ app.post('/makeLink', (req, res) => {
             if (type == 'level') levelVersionParam = `%26levelVersion%3d${levelVersion}`;
 
             // actually doing the thing
-            console.log('POST /makeLink | Making request to create link')
+            console.log(`ID ${req.id} (${req.method} ${req.processedPath}) | Making request to create link`)
             if ((suffixOption == "CUSTOM") && (GoogleAuth !== undefined)) {
-                console.log('POST /makeLink | Custom suffix chosen')
+                console.log(`ID ${req.id} (${req.method} ${req.processedPath}) | Custom suffix chosen`)
                  await GoogleAuth.request({
                     method: "POST",
                     url: "https://firebasedynamiclinks.googleapis.com/v1/managedShortLinks:create",
@@ -257,7 +291,7 @@ app.post('/makeLink', (req, res) => {
                     }
                 })
                 .then((response) => {
-                    console.log(`POST /makeLink | Link created`)
+                    console.log(`ID ${req.id} (${req.method} ${req.processedPath}) | Link created`)
                     res.json({
                         "status": "SUCCESS",
                         "link":`${response.data.managedShortLink.link}`
@@ -272,7 +306,7 @@ app.post('/makeLink', (req, res) => {
                     })  
                 })
             } else { 
-                console.log('POST /makeLink | Unguessable or short suffix chosen')
+                console.log(`ID ${req.id} (${req.method} ${req.processedPath}) | Unguessable or short suffix chosen`)
                 await axios.post(`https://firebasedynamiclinks.googleapis.com/v1/shortLinks?key=${process.env.LINK_KEY}`, {
                     "longDynamicLink": `https://exoracer.page.link:443/?ibi=com.nyanstudio.exoracer&link=https%3a%2f%2fexoracer.io%2f%3flink%3d${type.toUpperCase()}%26${type}Id%3d${levelID}${levelVersionParam}&si=${encodeURIComponent(imageURL)}&sd=${encodeURI(description).replace('%20', '+')}&st=${encodeURI(title).replace('%20', '+')}&apn=com.nyanstudio.exoracer&ofl=https%3a%2f%2fexoracer.io%2fdeeplinkfallback.php%3ftitle%3d${encodeURI(title).replace('%20', '%2b')}%26description%3d${encodeURI(description).replace('%20', '%2b')}%26imageUrl%3d${encodeURIComponent(imageURL)}`,
                     "suffix": {
@@ -280,7 +314,7 @@ app.post('/makeLink', (req, res) => {
                     }
                 })
                 .then((response) => {
-                    console.log(`POST /makeLink | Link created`)
+                    console.log(`ID ${req.id} (${req.method} ${req.processedPath}) | Link created`)
                     res.json({
                         "status": "SUCCESS",
                         "link":`${response.data.shortLink}`
@@ -307,7 +341,7 @@ app.post('/makeLink', (req, res) => {
 
 app.get('/nojs', (req, res) => {
     if (req.query.link) {
-        console.log(`GET /nojs | Making /getData request`)
+        console.log(`ID ${req.id} (${req.method} ${req.processedPath})| Making /getData request`)
         try {
             axios.post(`http://localhost:${server.address().port}/getData`, { 
                 "link": req.query.link,
@@ -345,7 +379,7 @@ app.get('/nojs', (req, res) => {
         return
     }
     if (req.query.suffixOption) {
-        console.log(`GET /nojs | Making /makeLink request`)
+        console.log(`ID ${req.id} (${req.method} ${req.processedPath}) | Making /makeLink request`)
         try {
             console.log(req.query)
             axios.post(`http://localhost:${server.address().port}/makeLink`, {
