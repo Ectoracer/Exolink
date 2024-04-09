@@ -102,3 +102,5 @@ Every other file is under the GNU Affero General Public License, version 3 of th
 
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+Every file in the `links` directory is *also* under the MIT license.
