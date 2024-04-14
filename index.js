@@ -566,6 +566,10 @@ app.get('/link/:prefix/:id', (req, res) => {
     }
 });
 
+app.get('/healthz', (req, res) => {
+    res.status(200).send('200 OK')
+});
+
 app.get('*', (req, res) => {
     if (fs.existsSync(`./links/exoracer/${req.path.slice(1)}.json`)) res.redirect(`/link/exoracer/${req.path.slice(1)}`);
     else if (fs.existsSync(`./links/exo/${req.path.slice(1)}.json`)) res.redirect(`/link/exo/${req.path.slice(1)}`);
