@@ -1,6 +1,6 @@
 {
   "name": "exolink",
-  "version": "1.6.1",
+  "version": "1.7.0",
   "description": "Make Exoracer share links with custom titles, descriptions, and images.",
   "main": "index.js",
   "scripts": {
