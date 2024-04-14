@@ -472,6 +472,10 @@ app.get('/nojs', (req, res) => {
     res.status(200).render('nojs', { 'data': null, 'link': null, 'version': version, 'sourceCode': process.env.SOURCE_CODE })
 })
 
+app.get('/weblabelsz', (req, res) => {
+    res.status(200).render('weblabelsz', { 'version': version, 'sourceCode': process.env.SOURCE_CODE });
+});
+
 app.get('/privacy', (req, res) => {
     res.status(200).render('privacy', { 'version': version, 'sourceCode': process.env.SOURCE_CODE });
 });

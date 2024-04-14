@@ -1,3 +1,4 @@
+// @license magnet:?xt=urn:btih:0b31508aeb0634b347b8270c7bee4d411b5d4109&dn=agpl-3.0.txt AGPL-3.0
 function makeImageURL() {
     var confirmed = confirm("This will replace the existing image URL to make it match with the current level ID and level version. You do not need to use this button to use a custom image URL.")
     if (confirmed) {
@@ -272,3 +273,4 @@ function showLevelVersion() {
         document.getElementById('imageURLButton').hidden = true
     }
 }
+// @license-end
