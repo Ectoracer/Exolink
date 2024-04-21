@@ -104,3 +104,5 @@ Every other file is under the GNU Affero General Public License, version 3 of th
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 Every file in the `links` directory is *also* under the MIT license.
+
+Exolink is not associated with, sponsored by, or otherwise affiliated with Nyan Studio Games, and does not have their oversight. Exoracer is copyright © Nyan Studio Games.
