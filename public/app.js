@@ -159,7 +159,9 @@ function makeLink() {
     
     // client-side validation
     let levelIDregex = /^[a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9]-[a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9]-[a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9]-[a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9]-[a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9]$/
-    if (!(levelIDregex.test(document.getElementById('levelID').value))) {
+    let levelID = document.getElementById('levelID').value
+    if (document.getElementById('levelID').value.startsWith('discord-')) levelID = document.getElementById('levelID').value.replace('discord-', '')
+    if (!(levelIDregex.test(levelID))) {
         alert('Something went wrong: Validation error: Invalid level ID')
         document.getElementById('shareLink').removeAttribute("readonly")
         document.getElementById('type').removeAttribute("readonly")

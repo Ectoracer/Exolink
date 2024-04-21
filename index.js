@@ -75,17 +75,17 @@ app.all('*', (req, res, next) => {
     if (path.endsWith('/') && !(path == '/')) {
         path = path.slice(0, path.length - 1);
         req.processedPath = path;
-        console.log(`ID ${req.id} (${req.method} ${req.processedPath}) | Request received`);
+        console.log(`ID ${req.id} (${req.method}) | Request ${req.processedPath} received`);
     }
     else if (path.startsWith('/image/')) {
         path = `/image/***`;
         req.processedPath = path;
-        console.log(`ID ${req.id} (${req.method} ${req.processedPath}) | Request received`);
+        console.log(`ID ${req.id} (${req.method}) | Request ${req.processedPath} received`);
     }
     else if (path.startsWith('/link/')) {
         path = `/link/***/***`;
         req.processedPath = path;
-        console.log(`ID ${req.id} (${req.method} ${req.processedPath}) | Request received`);
+        console.log(`ID ${req.id} (${req.method}) | Request ${req.processedPath} received`);
     }
     else {
         let pathName = path.slice(1);
@@ -97,14 +97,14 @@ app.all('*', (req, res, next) => {
                     if (response.status == 200) {
                         path = `/***`;
                         req.processedPath = path;
-                        console.log(`ID ${req.id} (${req.method} ${req.processedPath}) | Request received`);
+                        console.log(`ID ${req.id} (${req.method}) | Request ${req.processedPath} received`);
                     } else {
                         axios(`https://raw.githubusercontent.com/Ectoracer/link-directory/main/exo/${req.path.slice(1)}.json`)
                         .then((response) => { 
                             if (response.status == 200) {
                                 path = `/***`;
                                 req.processedPath = path;
-                                console.log(`ID ${req.id} (${req.method} ${req.processedPath}) | Request received`);
+                                console.log(`ID ${req.id} (${req.method}) | Request ${req.processedPath} received`);
                             }
                         })
                         .catch((error) => { if (!(error.response)) console.error(error); }) 
@@ -114,7 +114,7 @@ app.all('*', (req, res, next) => {
             }
         } else {
             req.processedPath = path;
-            console.log(`ID ${req.id} (${req.method} ${req.processedPath}) | Request received`);
+            console.log(`ID ${req.id} (${req.method}) | Request ${req.processedPath} received`);
         }
     }
     next();
@@ -138,8 +138,7 @@ function isNewLink(link) {
             } else return false;
         })
         .catch((error) => {
-            if (error.response) console.error(error.response);
-            else console.error(error);
+            if (!(error.response)) console.error(error);
             return false;
         })
     }
@@ -194,7 +193,7 @@ app.post('/getData', (req, res) => {
             }
 
             // actually doing the thing
-            console.log(`ID ${req.id} (${req.method} ${req.processedPath}) | Loading link`)
+            console.log(`ID ${req.id} (${req.method}) | Loading link`)
             
             let link;
             let type = 'level';
@@ -214,9 +213,9 @@ app.post('/getData', (req, res) => {
             .catch((error) => { return })
 
             if (link && (link.indexOf('deeplinkfallback.php') > -1)) { 
-                console.log(`ID ${req.id} (${req.method} ${req.processedPath}) | Long dynamic link found`); 
+                console.log(`ID ${req.id} (${req.method}) | Long dynamic link found`); 
             } else {
-                console.log(`ID ${req.id} (${req.method} ${req.processedPath}) | Long dynamic link not found`);
+                console.log(`ID ${req.id} (${req.method}) | Long dynamic link not found`);
                 res.status(400).json({
                     "status": "ERROR",
                     "error": "Long dynamic link couldn't be found - does your link exist?"
@@ -226,14 +225,16 @@ app.post('/getData', (req, res) => {
 
             if (link && (link.indexOf('exo.page.link') > -1)) link = new URL(link).searchParams.get('link')
             if (link && (link.indexOf('?link%3DLOBBY') > -1)) { 
-                console.log(`ID ${req.id} (${req.method} ${req.processedPath}) | Lobby link detected`);
+                console.log(`ID ${req.id} (${req.method}) | Lobby link detected`);
                 type = 'lobby';
             }
 
             let levelID;
             let levelVersion;
-            if (type == 'lobby') levelID = link.substring(link.indexOf('lobbyId%3D')).substring(10, 46);
-            else levelID = link.substring(link.indexOf('levelId%3D')).substring(10, 46);
+            if (type == 'lobby') {
+                levelID = link.substring(link.indexOf('lobbyId%3D')).substring(10, 46);
+                if (levelID.startsWith('discord-')) levelID = link.substring(link.indexOf('lobbyId%3D')).substring(10, 54);
+            } else levelID = link.substring(link.indexOf('levelId%3D')).substring(10, 46);
             let title = decodeURIComponent(link).substring(decodeURIComponent(link).indexOf('?title=')).substring(7).split('&')[0].replaceAll('+', ' ')
             let description = decodeURIComponent(link).substring(decodeURIComponent(link).indexOf('&description=')).substring(13).split('&')[0].replaceAll('+', ' ')
             let imageURL = decodeURIComponent(decodeURIComponent(link).substring(decodeURIComponent(link).indexOf('&imageUrl=')).substring(10).split('&')[0])
@@ -271,6 +272,7 @@ app.post('/makeLink', (req, res) => {
             // server-side validation and correction + variables
             let type = (req.body.type == 'lobby') ? "lobby" : "level";
             let levelID = req.body.levelID;
+            let levelID_noDiscord = levelID.startsWith('discord-') ? levelID.replace('discord-','') : levelID;
             let title = req.body.title;
             let description = req.body.description;
             let imageURL = req.body.imageURL;
@@ -279,7 +281,7 @@ app.post('/makeLink', (req, res) => {
             let suffixOption;
 
             let levelIDregex = /^[a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9]-[a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9]-[a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9]-[a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9]-[a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9]$/
-            if (!(levelIDregex.test(levelID))) {
+            if (!(levelIDregex.test(levelID_noDiscord))) {
                 res.status(400).json({
                     "status": "ERROR",
                     "error": "Validation error: Invalid level ID"
@@ -288,7 +290,7 @@ app.post('/makeLink', (req, res) => {
             }
 
             if (type == 'level') {
-                console.log(`ID ${req.id} (${req.method} ${req.processedPath}) | Making request to ExoStats`)
+                console.log(`ID ${req.id} (${req.method}) | Making request to Exoracer's servers`)
                 let noLevelID;
                 noLevelID = false;
                 await axios(`https://exostats.nl/?api&userlevel=${levelID}`, {
@@ -326,9 +328,9 @@ app.post('/makeLink', (req, res) => {
             if (type == 'level') levelVersionParam = `%26levelVersion%3d${levelVersion}`;
 
             // actually doing the thing
-            console.log(`ID ${req.id} (${req.method} ${req.processedPath}) | Making request to create link`)
+            console.log(`ID ${req.id} (${req.method}) | Making request to create link`)
             if ((suffixOption == "CUSTOM") && (GoogleAuth !== undefined)) {
-                console.log(`ID ${req.id} (${req.method} ${req.processedPath}) | Custom suffix chosen`)
+                console.log(`ID ${req.id} (${req.method}) | Custom suffix chosen`)
                  await GoogleAuth.request({
                     method: "POST",
                     url: "https://firebasedynamiclinks.googleapis.com/v1/managedShortLinks:create",
@@ -353,7 +355,7 @@ app.post('/makeLink', (req, res) => {
                     }
                 })
                 .then((response) => {
-                    console.log(`ID ${req.id} (${req.method} ${req.processedPath}) | Link created`)
+                    console.log(`ID ${req.id} (${req.method}) | Link created`)
                     res.json({
                         "status": "SUCCESS",
                         "link":`${response.data.managedShortLink.link}`
@@ -368,7 +370,7 @@ app.post('/makeLink', (req, res) => {
                     })  
                 })
             } else { 
-                console.log(`ID ${req.id} (${req.method} ${req.processedPath}) | Unguessable or short suffix chosen`)
+                console.log(`ID ${req.id} (${req.method}) | Unguessable or short suffix chosen`)
                 await axios.post(`https://firebasedynamiclinks.googleapis.com/v1/shortLinks?key=${process.env.LINK_KEY}`, {
                     "longDynamicLink": `https://exoracer.page.link:443/?ibi=com.nyanstudio.exoracer&link=https%3a%2f%2fexoracer.io%2f%3flink%3d${type.toUpperCase()}%26${type}Id%3d${levelID}${levelVersionParam}&si=${encodeURIComponent(imageURL)}&sd=${encodeURI(description).replace('%20', '+')}&st=${encodeURI(title).replace('%20', '+')}&apn=com.nyanstudio.exoracer&ofl=https%3a%2f%2fexoracer.io%2fdeeplinkfallback.php%3ftitle%3d${encodeURI(title).replace('%20', '%2b')}%26description%3d${encodeURI(description).replace('%20', '%2b')}%26imageUrl%3d${encodeURIComponent(imageURL)}`,
                     "suffix": {
@@ -376,7 +378,7 @@ app.post('/makeLink', (req, res) => {
                     }
                 })
                 .then((response) => {
-                    console.log(`ID ${req.id} (${req.method} ${req.processedPath}) | Link created`)
+                    console.log(`ID ${req.id} (${req.method}) | Link created`)
                     res.json({
                         "status": "SUCCESS",
                         "link":`${response.data.shortLink}`
@@ -403,7 +405,7 @@ app.post('/makeLink', (req, res) => {
 
 app.get('/nojs', (req, res) => {
     if (req.query.link) {
-        console.log(`ID ${req.id} (${req.method} ${req.processedPath})| Making /getData request`)
+        console.log(`ID ${req.id} (${req.method}| Making /getData request`)
         try {
             axios.post(`http://localhost:${server.address().port}/getData`, { 
                 "link": req.query.link,
@@ -441,7 +443,7 @@ app.get('/nojs', (req, res) => {
         return
     }
     if (req.query.suffixOption) {
-        console.log(`ID ${req.id} (${req.method} ${req.processedPath}) | Making /makeLink request`)
+        console.log(`ID ${req.id} (${req.method}) | Making /makeLink request`)
         try {
             axios.post(`http://localhost:${server.address().port}/makeLink`, {
                 "levelID": req.query.levelID,
