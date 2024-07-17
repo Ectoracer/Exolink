@@ -8,14 +8,14 @@
         <meta property="og:description" content="Exolink lets you make Exoracer share links with custom titles, descriptions, and images.">
         <meta name="theme-color" content="#7b4afa">
         <link rel="icon" href="/favicon.ico">
-        <link rel="stylesheet" href="/css/common.css" integrity="sha256-3ILlbtDScksc+dC1RJGIc5EkS4AE26z0SOMlHbBwLtA= sha384-RGxa0tnJJzlk/DKVDkzAG5EIYvcQ86MJ29OxyRiAo/TMe9ey3lthgAeIR74EXMK6 sha512-yV1lyvZTk3lgH0rHp9cg+aSXg9cQuuCP+69HzSWfrYt5fnn8js1masiDg7Z7TJIjLEFWzTd15T8sPuT7XtQCgw==" crossorigin="anonymous"> 
-        <link rel="stylesheet" href="/css/privacy.css" integrity="sha256-Op25yR5myxomuGz7B5ys4n18jz3Fl/x6ZS7r4TF7TEc= sha384-kYWN5qYCpxMO6cO/lInuOzGqX66krgjYigNLiMP5u2gX8+sPUbMKSwZuZvOsJ8aw sha512-9qxphmabxkIn38ky13XjsJO+4c0RXTkG70GYVkQiFlZC1eqVEE+ZqEhDZC4aqrqRs1wKn69pncg0OqPVpVSFOg==" crossorigin="anonymous"> 
+        <link rel="stylesheet" href="/css/common.css" integrity="sha256-3ILlbtDScksc+dC1RJGIc5EkS4AE26z0SOMlHbBwLtA= sha384-RGxa0tnJJzlk/DKVDkzAG5EIYvcQ86MJ29OxyRiAo/TMe9ey3lthgAeIR74EXMK6 sha512-yV1lyvZTk3lgH0rHp9cg+aSXg9cQuuCP+69HzSWfrYt5fnn8js1masiDg7Z7TJIjLEFWzTd15T8sPuT7XtQCgw==" crossorigin="anonymous" referrerpolicy="noreferrer"> 
+        <link rel="stylesheet" href="/css/privacy.css" integrity="sha256-Op25yR5myxomuGz7B5ys4n18jz3Fl/x6ZS7r4TF7TEc= sha384-kYWN5qYCpxMO6cO/lInuOzGqX66krgjYigNLiMP5u2gX8+sPUbMKSwZuZvOsJ8aw sha512-9qxphmabxkIn38ky13XjsJO+4c0RXTkG70GYVkQiFlZC1eqVEE+ZqEhDZC4aqrqRs1wKn69pncg0OqPVpVSFOg==" crossorigin="anonymous" referrerpolicy="noreferrer"> 
     </head>
     <body>
         <% 
             let modifiedLink = sourceCode;
-            if ((sourceCode == "https://github.com/jbmagination/exolink" || sourceCode == "https://github.com/Ectoracer/Exolink")) sourceCode = `<a href="https://github.com/Ectoracer/Exolink">source code</a>`
-            else sourceCode = `source code: <a href="${modifiedLink}">modified</a> (<a href="/changes.txt">changes</a>), <a href="https://github.com/Ectoracer/Exolink">original</a>`
+            if ((sourceCode == "https://github.com/jbmagination/exolink" || sourceCode == "https://github.com/Ectoracer/Exolink")) sourceCode = `<a href="https://github.com/Ectoracer/Exolink" target="_blank" rel="nofollow noreferrer noopener" referrerpolicy="noreferrer">source code</a>`
+            else sourceCode = `source code: <a href="${modifiedLink}" target="_blank" rel="nofollow noreferrer noopener" referrerpolicy="noreferrer">modified</a> (<a href="/changes.txt">changes</a>), <a href="https://github.com/Ectoracer/Exolink" target="_blank" rel="nofollow noreferrer noopener" referrerpolicy="noreferrer">original</a>`
         %> 
         <h1>Exolink <span class="info"><%= version %> | <%- sourceCode %> | <a href="/privacy">privacy</a></span></h1>
         <div>

@@ -9,14 +9,14 @@
         <meta property="og:description" content="Exolink lets you make Exoracer share links with custom titles, descriptions, and images.">
         <meta name="theme-color" content="#7b4afa">
         <link rel="icon" href="/favicon.ico">
-        <link rel="stylesheet" href="/css/common.css" integrity="sha256-3ILlbtDScksc+dC1RJGIc5EkS4AE26z0SOMlHbBwLtA= sha384-RGxa0tnJJzlk/DKVDkzAG5EIYvcQ86MJ29OxyRiAo/TMe9ey3lthgAeIR74EXMK6 sha512-yV1lyvZTk3lgH0rHp9cg+aSXg9cQuuCP+69HzSWfrYt5fnn8js1masiDg7Z7TJIjLEFWzTd15T8sPuT7XtQCgw==" crossorigin="anonymous"> 
-        <link rel="stylesheet" href="/css/main.css" integrity="sha256-6RaFT0VrzAyWoZwT5f+r6vFllNi8/FJS6+AuVi5VQNw= sha384-khO5M8joq/hYkL3564zsywiZc0Eh7oNC2PGCLtZSRVtFNcjODdlIUntkr0phacAy sha512-V/V1aFeDvaHArsWemKN+UOQS82kQF1TXBLF8u3D5hkpGd5INuy1pYnre4cDZe8YouNqSZhqBefXOt2gA5eEojQ==" crossorigin="anonymous"> 
+        <link rel="stylesheet" href="/css/common.css" integrity="sha256-3ILlbtDScksc+dC1RJGIc5EkS4AE26z0SOMlHbBwLtA= sha384-RGxa0tnJJzlk/DKVDkzAG5EIYvcQ86MJ29OxyRiAo/TMe9ey3lthgAeIR74EXMK6 sha512-yV1lyvZTk3lgH0rHp9cg+aSXg9cQuuCP+69HzSWfrYt5fnn8js1masiDg7Z7TJIjLEFWzTd15T8sPuT7XtQCgw==" crossorigin="anonymous" referrerpolicy="noreferrer"> 
+        <link rel="stylesheet" href="/css/main.css" integrity="sha256-tBLP8K7JsngieKCv+q4hKL2VNy61c2EczY98HQsTWdo= sha384-M7rBxAtlPcHDI4lETG27M/k6WaE/rynS+nLr4xW2Jp4Yt3bVAVngl2F1AQl7sNNC sha512-bxXVFfezWcz6CJevGwS+dMLfH2qm6VdrwlMQvWKM6SHci87vnHzq/TkqaEhjG6z0C1XApJceSPUQZxeJc8lAPQ==" crossorigin="anonymous" referrerpolicy="noreferrer"> 
     </head>
     <body>
         <% 
             let modifiedLink = sourceCode;
-            if ((sourceCode == "https://github.com/jbmagination/exolink" || sourceCode == "https://github.com/Ectoracer/Exolink")) sourceCode = `<a href="https://github.com/Ectoracer/Exolink">source code</a>`
-            else sourceCode = `source code: <a href="${modifiedLink}">modified</a> (<a href="/changes.txt">changes</a>), <a href="https://github.com/Ectoracer/Exolink">original</a>`
+            if ((sourceCode == "https://github.com/jbmagination/exolink" || sourceCode == "https://github.com/Ectoracer/Exolink")) sourceCode = `<a href="https://github.com/Ectoracer/Exolink" target="_blank" rel="nofollow noreferrer noopener" referrerpolicy="noreferrer">source code</a>`
+            else sourceCode = `source code: <a href="${modifiedLink}" target="_blank" rel="nofollow noreferrer noopener" referrerpolicy="noreferrer">modified</a> (<a href="/changes.txt">changes</a>), <a href="https://github.com/Ectoracer/Exolink" target="_blank" rel="nofollow noreferrer noopener" referrerpolicy="noreferrer">original</a>`
         %>
         <h1>Exolink <span class="info"><%= version %> | <%- sourceCode %> | <a href="/privacy">privacy</a></span></h1>
         <% if (data && data.error) { %><div id="error" style="color:darkred"><%= "Something went wrong: " + data.error %></div><% } %>
@@ -55,10 +55,11 @@
                 <select id="type" name="type">
                     <option value="level" <% if(data && (data.type == 'level')) { %> selected <% } %>>Level</option>
                     <option value="lobby" <% if(data && (data.type == 'lobby')) { %> selected <% } %>>Lobby</option>
+                    <option value="run" <% if(data && (data.type == 'run')) { %> selected <% } %>>Run</option>
                 </select>
             </div>
             <div>
-                <label for="levelID">Level/lobby ID:</label>
+                <label for="levelID">Level/lobby/run ID:</label>
                 <input type="text" id="levelID" name="levelID" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" <% if(data && data.levelID) { %> value="<%=data.levelID%>" <% } %>>
             </div>
             <div>
@@ -88,6 +89,6 @@
             <input type="submit" value="Make link">
         </form>
         <% if(data && data.link) { %> <br>
-        <div id="link"> <a href="<%=data.link%>"><%=data.link%></a></div><% } %>
+        <div id="link"> <a href="<%=data.link%>" target="_blank" rel="nofollow noreferrer noopener" referrerpolicy="noreferrer"><%=data.link%></a></div><% } %>
     </body>
 </html>

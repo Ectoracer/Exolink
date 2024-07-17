@@ -23,6 +23,10 @@ select {
     border-style: none;
     padding: 3px;
     font-size: 20px;
+    transition: 0.3s;
+}
+select:hover {
+    background-color: #642ac7;
 }
 input[type="submit"] {
     cursor: pointer;
@@ -32,6 +36,10 @@ input[type="submit"] {
     border-style: none;
     padding: 4px;
     font-size: 20px;
+    transition: 0.3s;
+}
+input[type="submit"] {
+    background-color: #642ac7;
 }
 button {
     cursor: pointer;
@@ -41,4 +49,8 @@ button {
     border-style: none;
     padding: 4px;
     font-size: 20px;
+    transition: 0.3s;
+}
+button:hover {
+    background-color: #642ac7;
 }

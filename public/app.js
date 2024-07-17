@@ -196,7 +196,7 @@ function makeLink() {
     .then((data) => {
         switch (data.status) {
             case "SUCCESS":
-                document.getElementById('link').innerHTML = `<p><a href="${data.link}">${data.link}</a></p>`
+                document.getElementById('link').innerHTML = `<p><a href="${data.link}" target="_blank" rel="nofollow noreferrer noopener" referrerpolicy="noreferrer">${data.link}</a></p>`
                 document.getElementById('shareLink').removeAttribute("readonly")
                 document.getElementById('type').removeAttribute("readonly")
                 document.getElementById('levelID').removeAttribute("readonly")

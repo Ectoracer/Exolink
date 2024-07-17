@@ -29,12 +29,14 @@ a.button {
     border-style: none;
     padding: 4px;
     font-size: 20px;
+    transition: 0.3s;
 }
 a.button:after {
     border-bottom: 0px solid #fff;
 }
 a.button:hover {
     color: #fff;
+    background-color: #642ac7;
 }
 a.button:hover:after {
     color: #fff;

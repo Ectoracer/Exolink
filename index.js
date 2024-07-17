@@ -229,16 +229,19 @@ app.post('/getData', (req, res) => {
                 console.log(`ID ${req.id} (${req.method} ${req.processedPath}) | Lobby link detected`);
                 type = 'lobby';
             }
+            if (link && (link.indexOf('?link%3DRUN') > -1)) { 
+                console.log(`ID ${req.id} (${req.method} ${req.processedPath}) | Run link detected`);
+                type = 'run';
+            }
 
             let levelID;
             let levelVersion;
-            if (type == 'lobby') levelID = link.substring(link.indexOf('lobbyId%3D')).substring(10, 46);
-            else levelID = link.substring(link.indexOf('levelId%3D')).substring(10, 46);
+            levelID = link.substring(link.indexOf(`${type}Id%3D`)).substring(type.length + 5, type.length + 41);
             let title = decodeURIComponent(link).substring(decodeURIComponent(link).indexOf('?title=')).substring(7).split('&')[0].replaceAll('+', ' ')
             let description = decodeURIComponent(link).substring(decodeURIComponent(link).indexOf('&description=')).substring(13).split('&')[0].replaceAll('+', ' ')
             let imageURL = decodeURIComponent(decodeURIComponent(link).substring(decodeURIComponent(link).indexOf('&imageUrl=')).substring(10).split('&')[0])
-            if (type == 'lobby') levelVersion = 1;
-            else levelVersion = decodeURIComponent(link).substring(decodeURIComponent(link).indexOf('&levelVersion=')).substring(14).split('&')[0]
+            if (type == 'level') levelVersion = decodeURIComponent(link).substring(decodeURIComponent(link).indexOf('&levelVersion=')).substring(14).split('&')[0]
+            else levelVersion = 1;
 
             if (parseInt(levelVersion).toString() == "NaN") levelVersion = 1
 
@@ -269,7 +272,7 @@ app.post('/makeLink', (req, res) => {
     (async () => {
         try {
             // server-side validation and correction + variables
-            let type = (req.body.type == 'lobby') ? "lobby" : "level";
+            let type = (req.body.type == 'run') ? "run" : (req.body.type == 'lobby') ? "lobby" : "level";
             let levelID = req.body.levelID;
             let title = req.body.title;
             let description = req.body.description;

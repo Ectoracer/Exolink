@@ -10,14 +10,19 @@
         <meta property="og:type" content="website" />
         <meta name="theme-color" content="#7b4afa">
         <link rel="icon" href="/favicon.ico">
-        <link rel="stylesheet" href="/css/common.css" integrity="sha256-3ILlbtDScksc+dC1RJGIc5EkS4AE26z0SOMlHbBwLtA= sha384-RGxa0tnJJzlk/DKVDkzAG5EIYvcQ86MJ29OxyRiAo/TMe9ey3lthgAeIR74EXMK6 sha512-yV1lyvZTk3lgH0rHp9cg+aSXg9cQuuCP+69HzSWfrYt5fnn8js1masiDg7Z7TJIjLEFWzTd15T8sPuT7XtQCgw==" crossorigin="anonymous">
-        <link rel="stylesheet" href="/css/link.css" integrity="sha256-xPEXaOPG7y5WUTC6a3Q9ZOPjY7PNRjIDC72NNSfiSVs= sha384-vJcVncJvQZuECjD4ZU6ojzqutcQ9urSkZTs0Fk5KToIim7ozTv6MZg82vV25H2EE sha512-D4y78X1+N4BsV6pDZGsCIpsa+F7r5k5mWu/vJrDuAHEf/k8ounVcdPYtADLzRdCZ4bqdKCS00Rf8ZyY3kYFokA==" crossorigin="anonymous">
+        <link rel="stylesheet" href="/css/common.css" integrity="sha256-3ILlbtDScksc+dC1RJGIc5EkS4AE26z0SOMlHbBwLtA= sha384-RGxa0tnJJzlk/DKVDkzAG5EIYvcQ86MJ29OxyRiAo/TMe9ey3lthgAeIR74EXMK6 sha512-yV1lyvZTk3lgH0rHp9cg+aSXg9cQuuCP+69HzSWfrYt5fnn8js1masiDg7Z7TJIjLEFWzTd15T8sPuT7XtQCgw==" crossorigin="anonymous" referrerpolicy="noreferrer">
+        <link rel="stylesheet" href="/css/link.css" integrity="sha256-UW7HIOcL/cWgGNvL4mgYhRcAcxA41hqqcjOIDHBN+yw= sha384-0boFfsipWHpLLbU/9QsBDZGWcZpRZpc9h9qCAUQlxtqkJp0MqGZKkYBjDK9nZ4Qf sha512-Bv4Uszj30UkjcviSbdDBsgjCwclInbtGHM5KkWCmeAblcIVfkyyI/TWm4KEFJwhWh/vs5GbzBvjlffqSF+itnw==" crossorigin="anonymous" referrerpolicy="noreferrer">
     </head>
     <body>
         <% 
             let modifiedLink = sourceCode;
-            if ((sourceCode == "https://github.com/jbmagination/exolink" || sourceCode == "https://github.com/Ectoracer/Exolink")) sourceCode = `<a href="https://github.com/Ectoracer/Exolink">source code</a>`
-            else sourceCode = `source code: <a href="${modifiedLink}">modified</a> (<a href="/changes.txt">changes</a>), <a href="https://github.com/Ectoracer/Exolink">original</a>`
+            if ((sourceCode == "https://github.com/jbmagination/exolink" || sourceCode == "https://github.com/Ectoracer/Exolink")) sourceCode = `<a href="https://github.com/Ectoracer/Exolink" target="_blank" rel="nofollow noreferrer noopener" referrerpolicy="noreferrer">source code</a>`
+            else sourceCode = `source code: <a href="${modifiedLink}" target="_blank" rel="nofollow noreferrer noopener" referrerpolicy="noreferrer">modified</a> (<a href="/changes.txt">changes</a>), <a href="https://github.com/Ectoracer/Exolink" target="_blank" rel="nofollow noreferrer noopener" referrerpolicy="noreferrer">original</a>`
+
+            let requiredVersion = '1.6';
+            if (level.type == 'level') requiredVersion = '1.6'
+            else if (level.type == 'lobby') requiredVersion = '1.10'
+            else if (level.type == 'run') requiredVersion = '2.1.1'
         %> 
         <div>
             <div class="container">
@@ -38,7 +43,8 @@
         <img src="/phone.png" class="phone" />
         <br>
         <br>
-        <p>This is a link to an online <%= level.type %> from the game Exoracer. Download it from <a href="<%= level.play || "https://play.google.com/store/apps/details?id=com.nyanstudio.exoracer" %>">Google Play</a>, <a href="https://apps.apple.com/app/exoracer/id1618857304">App Store</a>, or <a href="https://store.steampowered.com/app/2845120">Steam</a>.</p>
+        <p>This is a link to a <%= level.type %> in the game <a href="https://exoracer.io" target="_blank" rel="nofollow noreferrer noopener" referrerpolicy="noreferrer">Exoracer</a>. Opening it requires version <%= requiredVersion %> or later.<br>
+            Download Exoracer from <a href="<%= level.play || "https://play.google.com/store/apps/details?id=com.nyanstudio.exoracer" %>" target="_blank" rel="nofollow noreferrer noopener" referrerpolicy="noreferrer">Google Play</a>, <a href="https://apps.apple.com/app/exoracer/id1618857304" target="_blank" rel="nofollow noreferrer noopener" referrerpolicy="noreferrer">App Store</a>, <a href="https://store.steampowered.com/app/2845120" target="_blank" rel="nofollow noreferrer noopener" referrerpolicy="noreferrer">Steam</a>, or <a href="https://discord.com/channels/952909728055427092/981692721909624832" target="_blank" rel="nofollow noreferrer noopener" referrerpolicy="noreferrer">#announcements</a> in the <a href="https://discord.com/invite/exoracer" target="_blank" rel="nofollow noreferrer noopener" referrerpolicy="noreferrer">Discord</a>.</p>
         <br>
         <p></p><span class="info">Exolink <%= version %> | <%- sourceCode %> | <a href="/privacy">privacy</a></span></p>
     </body>
